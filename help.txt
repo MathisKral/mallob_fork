@@ -1,0 +1,444 @@
+c 
+c Mallob - Malleable Load Balancer - Massively Parallel Logic Backend
+c 
+c Core system:
+c (C) 2018-2026 Dominik Schreiber, Karlsruhe Institute of Technology
+c (C) 2025-2026 Niccolò Rigi-Luperti, Karlsruhe Institute of Technology
+c 
+c Application module SAT: by Dominik Schreiber and Niccolò Rigi-Luperti
+c Featuring Lingeling and YalSAT by Armin Biere
+c Featuring Kissat by Armin Biere
+c Featuring CaDiCaL by Armin Biere, Mathias Fleury, Katalin Fazekas, Florian Pollitt, Tobias Faller, and Nils Froleyks
+c Featuring Minisat by Niklas Een and Niklas Sörensson
+c 
+c Application module SATWITHPRE: 
+c Featuring Satsuma by Markus Anders, with interface code by Anna Görth
+c 
+c Application module PALRUPCHECK: by Dominik Schreiber and Ruben Götz
+c 
+c Application module MAXSAT: by Dominik Schreiber, Teemu Koukkari, and Jeremias Berg
+c Featuring MaxPRE preprocessor by Tuukka Korhonen, modified by Jeremias Berg and Dominik Schreiber
+c Featuring RustSAT by Christoph Jabs
+c 
+c Application module SMT: 
+c Featuring Bitwuzla by Aina Niemetz and Mathias Preiner
+c 
+0.001 0 Program options: -0o=0 -J=0 -SJ=0 -T=0 -adc=0 -aim=1 -ajpc=0 -ans=0 -apidir=.api -ba=4 -bem=1 -bicg=4 -br=0 -c=1 -cbbs=0 -cblm=1 -cblp=100000 -cdel=2 -cecpm=0 -cf=0 -cfci=10 -cfm=3 -cg=1 -ch=0 -checksums=0 -cjc=0 -ckas=0 -client-app-threads=1 -cm=1 -cmp=0 -colors=0 -compact-proof=0 -cpshm=0 -csm=3 -cusv=1 -dc=0 -decpm=0 -delaymonkey=0 -div-phases=1 -div-seeds=1 -dpa=1 -ds=0 -evpt=500 -evu=0 -extmem-disk-dir=.disk -fapii=0 -fcll=1 -fitp=0 -g=0 -gclls=0 -h=1 -huca=0 -iff=0 -ilbd=0 -inotify=1 -interface-fs=1 -interface-ipc=0 -ipm=1 -isp=1 -ivdh=0 -jc=4 -jcl=0 -jcup=0 -jjp=0 -js=0 -jwl=0 -l=1 -latencymonkey=0 -lbdpi=0 -lbdpo=0 -ljpc=32 -maxpre=1 -maxpre-techniques=[bu]# -maxpre-techniques-post=[bu]#[buvsrgcHTVGR] -maxpre-timeout=9999999 -maxpre-timeout-post=0 -maxsat-card-encoding=3 -maxsat-focus-min=1 -maxsat-focus-period=0 -maxsat-interval-skew=0.5 -maxsat-searchers=1 -maxsat-write-job-lits=0 -mbt=8388608 -mcips=10 -md=0 -mempanic=1 -mjps=0 -mlbdps=2 -mlpt=50000000 -mmpi=0 -mono-app=SAT -mono-incs=0 -mscf=5 -nec=10 -no-import=0 -nsdi=10 -nsds=5 -os=0 -otfc=0 -otfci=0 -otfcm=1 -p=0.1 -palrup=0 -palrup-binary=1 -palrup-check=0 -palrup-clean=1 -palrup-merge-buffer=8192 -palrup-q-alpha=0.5 -palrup-q-size=409600 -palrup-read-buffer=16384 -palrup-strat=3 -palrup-use-local-disks=0 -palrup-write-buffer=16384 -pb=1 -pbbm=0 -pef=1 -pjp=9999999 -pl=1 -pph=0 -pre-cleanup=0 -presa=0 -prisma=0 -proof-debugging=0 -ps=0 -q=0 -qcll=60 -qlbdl=60 -randlbd=0 -replay=0 -rlbd=3 -rpa=0 -rs=1 -rspaa=0 -s=0.5 -sat-config-dirs=config/sat/base -satsolver=C -scll=60 -scramble-lbds=0 -scsd=0 -seed=0 -sjd=0 -slbdl=60 -sleep=100 -smt-check-sat=0 -spl=-1 -sswl=0 -t=0 -terminate-abruptly=0 -tmp=/tmp -trace-dir=. -tst=1 -uninvert-proof=1 -v=2 -w=-1 -wam=10000 -warmup=0 -watchdog=1 -y=1 -yield=0 
+0.001 0 Usage: [mpiexec -np <num-mpi-processes> [mpi-options]] mallob [options]
+0.001 0 Each option must be given as "-key=value" or "--key=value" or (for boolean options only) just "-[-]key".
+
+=== General ===
+
+-J , -jobs (int, default: 0)
+	Exit as soon as this number of jobs has been processed (set to 1 if -mono is used)
+-SJ , -successful-jobs (int, default: 0)
+	Exit as soon as this number of jobs has been processed SUCCESSFULLY (i.e., not cancelled / aborted)
+-T , -time-limit (float, default: 0)
+	Run entire system for at most this many seconds
+-c , -clients (int, default: 1)
+	Number of client PEs to initialize (counting backwards from last rank). -1: all PEs are clients
+-client-app (string)
+	Have clients run specified external program path + "." + i for increasing i (or, if nonexistent, just the path as is)
+-client-app-threads (int, default: 1)
+	Max. number of applications to run per client
+-h , -help (bool, default: 1)
+	Print help and exit
+-mono (string)
+	Mono instance: Solve the provided CNF instance with full power, then exit
+-mono-app , -mono-application (string, default: SAT)
+	Application assumed for mono mode
+-mono-incs , -mono-increments (int, default: 0)
+	Whether the "mono" job should be considered incremental
+-pre-cleanup (bool, default: 0)
+	Clean up shmem/proof/trace/extmem files before starting off
+-seed (int, default: 0)
+	Random seed
+-terminate-abruptly (bool, default: 0)
+	Upon termination, avoid waiting for sub-processors to finish
+-w , -workers (int, default: -1)
+	Number of worker PEs to initialize (beginning from rank #0), -1: all PEs are workers
+-warmup (bool, default: 0)
+	Do one explicit All-To-All warmup among all nodes in the beginning
+
+=== Interface ===
+
+-ajpc , -active-jobs-per-client (int, default: 0)
+	Make each client have up to this many active jobs at any given time
+-apidir , -api-dir (string, default: .api)
+	Directory for filesystem API
+-client-template (string)
+	JSON template file which each client uses to decide on job parameters (with -job-template option)
+-fapii , -first-api-index (int, default: 0)
+	1st API index: with c clients, uses [-apidir]/jobs.{<index>..<index>+c-1}/ as directories
+-inotify (bool, default: 1)
+	Use inotify for filesystem interface (otherwise, use naive directory polling)
+-interface-fs (bool, default: 1)
+	Use filesystem interface ([-apidir]/jobs.*/{in,out}/*.json)
+-interface-ipc (bool, default: 0)
+	Use IPC socket interface (.mallob.<pid>.sk)
+-job-desc-template (string)
+	Plain text file, one file path per line, to use as job descriptions (with -job-template option)
+-job-template (string)
+	JSON template file which each client uses to instantiate jobs indeterminately
+-ljpc , -loaded-jobs-per-client (int, default: 32)
+	Limit for how many job descriptions each client is allowed to have loaded at the same time
+-mjps , -max-jobs-per-streamer (int, default: 0)
+	Maximum number of jobs to introduce per streamer
+-sjd , -shuffle-job-descriptions (bool, default: 0)
+	Shuffle job descriptions given via -job-desc-template option
+-sro , -streamer-result-output (string)
+	Path for streamer to write result metadata to
+
+=== Output ===
+
+-0o , -zero-only-logging (bool, default: 0)
+	Only PE of rank zero does logging
+-colors (bool, default: 0)
+	Colored terminal output based on messages' verbosity
+-iff , -immediate-file-flush (bool, default: 0)
+	Flush log files after each line instead of buffering
+-log , -log-directory (string)
+	Directory to save logs in
+-os , -omit-solution (bool, default: 0)
+	Do not output solution in mono mode of operation
+-ps , -pipe-solutions (int, default: 0)
+	Provide [0=no,1=large,2=all] solutions over a named pipe instead of directly writing them into the response JSON
+-q , -quiet (bool, default: 0)
+	Do not log to stdout besides critical information
+-s2f , -solution-to-file (string)
+	Write solutions to file with provided base name + job ID
+-tmp , -tmp-directory (string, default: /tmp)
+	General temporary directory to write working files into
+-v , -verbosity (int, default: 2)
+	Logging verbosity: 0=CRIT 1=WARN 2=INFO 3=VERB 4=VVERB 5=DEBG
+
+=== Scheduling ===
+
+-ba , -bounce-alternatives (int, default: 4)
+	Number of bounce alternatives per PE
+-evu , -explicit-volume-updates (bool, default: 0)
+	Broadcast volume updates through job tree instead of letting each PE compute it itself
+-jc , -job-cache-size (int, default: 4)
+	Size of job cache per PE for suspended yet unfinished job nodes
+-l , -load-factor (float, default: 1)
+	The share of PEs which should be busy at any given time
+-p , -balancing-period (float, default: 0.1)
+	Minimum interval between subsequent rounds of balancing
+
+* Options for mapping workers to PEs *
+
+-br , -bulk-requests (bool, default: 0)
+	Encode requests for an entire subtree as a single request
+-dc , -dormant-children (bool, default: 0)
+	Simple strategy of maintaining local set of dormant child job contexts which the parent tries to reactivate
+-huca , -hops-until-collective-assignment (int, default: 0)
+	After a job request hopped this many times, add it to collective negotiation of requests and idle nodes (0: immediately, -1: never
+-prisma , -prefix-sum-matching (bool, default: 0)
+	Match requests and idle PEs using prefix sums instead of a routing tree
+-rs , -use-reactivation-scheduling (bool, default: 1)
+	Perform reactivation-based scheduling
+
+=== Global configuration of jobs ===
+
+-adc , -aggressive-desc-caching (bool, default: 0)
+	Try to reuse cached job descriptions by only transferring them when not repairable without them
+-app-config (string)
+	Application configuration: structured as (-key=value;)*
+-cg , -continuous-growth (bool, default: 1)
+	Continuous growth of job demands
+-cjc , -cross-job-communication (bool, default: 0)
+	Enable communication across jobs, such as cross-problem clause sharing, within user-specified job groups
+-g , -growth-period (float, default: 0)
+	Grow job demand exponentially every t seconds (0: immediate full growth)
+-jcl , -job-cpu-limit (float, default: 0)
+	Timeout an instance after x cpu seconds
+-jcup , -job-comm-update-period (float, default: 0)
+	Job communicator update period (0: never update)
+-jjp , -jitter-job-priorities (bool, default: 0)
+	Jitter job priorities to break ties during rebalancing
+-jwl , -job-wallclock-limit (float, default: 0)
+	Timeout an instance after x seconds wall clock time
+-md , -max-demand (int, default: 0)
+	Limit any job's demand to this value
+-s , -app-comm-period (float, default: 0.5)
+	Do job-internal communication every t seconds
+-t , -threads-per-process (int, default: 0)
+	Number of application worker threads per MPI process; maximum value configurable at compile time via -DMALLOB_MAX_N_APPTHREADS_PER_PROCESS
+
+=== Application-specific options ===
+
+* SAT solving options *
+
+-ans , -abort-noninc-subproc (bool, default: 0)
+	Abort (hence restart) each sub-process which works (partially) non-incrementally upon the arrival of a new revision
+-cf , -compress-formula (bool, default: 0)
+	Compress formula serialization (reorders clauses and literals in clauses)
+-clause-log (string)
+	Log successfully shared clauses to the provided path
+-cm , -compress-models (bool, default: 1)
+	Compress found models into hexadecimal vector in output
+-cpshm (bool, default: 0)
+	Copy each formula + assumptions from shared memory to local memory before launching solvers
+-gtm (string)
+	Ground truth model to test learned clauses against
+-js (int, default: 0)
+	Max. concurrent SAT job streams per client process (0: use # MPI processes)
+-replay (int, default: 0)
+	0: nothing, 1: record solver threads' behavior, 2: replay solving
+-rspaa , -restart-subproc-at-abort (bool, default: 0)
+	Ignore abort() of a subprocess and just restart it rather than aborting yourself
+-sec , -sat-engine-config (string)
+	Supply config for SAT engine subprocess [internal option, do not use]
+-spd , -sat-profiling-dir (string)
+	Directory to write SAT thread profiling reports to
+-spl , -sat-profiling-level (int, default: -1)
+	Profiling level for SAT solvers (-1=none ... 4=all)
+
+Clause sharing configuration:
+-aim , -adaptive-import-manager (bool, default: 1)
+	Use adaptive clause store for each solver's import buffer instead of lock-free ring buffers
+-bem , -backlog-export-manager (bool, default: 1)
+	Use sequentialized export manager with backlogs instead of simple HordeSat-style export
+-bicg , -buffered-imported-cls-generations (int, default: 4)
+	Number of subsequent full clause sharings to fit in each solver's import buffer
+-cbbs , -clause-buffer-base-size (int, default: 0)
+	DISCONTINUED - use exportVolumePerThread (-evpt) instead, which is supposed to have a one-size-fits-all default
+-cblm , -clause-buffer-limit-mode (int, default: 1)
+	Mode for computing clause buffer limit w.r.t. worker count (0: unlimited growth based on levels of binary tree, 1: limited growth based on exponential function
+-cblp , -clause-buffer-limit-param (float, default: 100000)
+	Clause buffer discount factor: reduce buffer size per PE by <factor> each depth
+-cfci , -clause-filter-clear-interval (float, default: 10)
+	Set clear interval of clauses in solver filters (-1: never clear, 0: always clear
+-cfm , -clause-filter-mode (int, default: 3)
+	0 = no filtering, 1 = bloom filters, 2 = exact filters, 3 = exact filters with distributed filtering in a 2nd all-reduction
+-ch , -collect-clause-history (bool, default: 0)
+	Employ clause history collection mechanism
+-csm , -clause-store-mode (int, default: 3)
+	-1 = static by length w/ mixed LBD, 0 = static by length, 1 = static by LBD, 2 = adaptive by length + -mlbdps option, 3 = simplified adaptive
+-cusv , -compensate-unused-sharing-volume (bool, default: 1)
+	Compensate for unused or filtered parts of clause buffer in the next sharings
+-evpt , -export-volume-per-thread (int, default: 500)
+	Max. number of clause literals to export per thread per sharing operation
+-fcll , -free-clause-length-limit (int, default: 1)
+	Max. length of clauses which are considered "free" for sharing
+-gclls , -group-by-length-lbd-sum (bool, default: 0)
+	Group and prioritize clauses in buffers by the sum of clause length and LBD score
+-ilbd , -increment-lbd-at-import (bool, default: 0)
+	Increment LBD value of each clause before import
+-ivdh , -incremental-variable-domain-heuristic (int, default: 0)
+	>=1: Replace LBD values with a rating based on how many clause literals are in the original (0th increment) variable range; 1=for cross-sharing only, 2=always. >=1 also overrides -lbdpi=1 -lbdpo=1 -pbbm=1 for cross-sharing ONLY.
+-lbdpi , -lbd-priority-inner (bool, default: 0)
+	Whether LBD should be used as primary quality metric in the inner buckets (bound by "quality" limits)
+-lbdpo , -lbd-priority-outer (bool, default: 0)
+	Whether LBD should be used as primary quality metric in the outer buckets (bound by "strict" limits)
+-mcips , -min-import-chunks-per-solver (int, default: 10)
+	Min. number of single-export-sized chunks for buffering incoming clauses for import per solver
+-mlbdps , -max-lbd-partition-size (int, default: 2)
+	Store clauses with up to this LBD in separate buckets
+-mscf , -max-sharing-compensation-factor (float, default: 5)
+	Max. relative increase in size of clause sharing buffers in case of many clauses being filtered
+-nec , -export-chunks (int, default: 10)
+	Number of single-export-sized chunks for buffering produced clauses for export
+-no-import (bool, default: 0)
+	Turn off solvers importing clauses (for comparison purposes)
+-pbbm , -priority-based-buffer-merging (bool, default: 0)
+	Use a more sophisticated and expensive merge procedure that adopts the prioritization of csm=3
+-qcll , -quality-clause-length-limit (int, default: 60)
+	Clauses up to this length are considered "high quality"
+-qlbdl , -quality-lbd-limit (int, default: 60)
+	Clauses with an LBD score up to this value are considered "high quality"
+-randlbd , -randomize-lbd-at-import (int, default: 0)
+	Randomize the LBD value of each clause before import. 0=Never. 1=Uniformly. 2=Triangle-distribution. - can be combined with -ilbd afterwards
+-rlbd , -reset-lbd (int, default: 3)
+	Reset each clause's LBD to its length 0=never; 1=at import; 2=at export; 3=at production
+-scll , -strict-clause-length-limit (int, default: 60)
+	Only clauses up to this length will be shared
+-scramble-lbds (bool, default: 0)
+	For each clause length, randomly reassign the present LBD values to the present shared clauses
+-scsd , -skip-clause-sharing-diagonally (bool, default: 0)
+	In the ith diversification round, disable clause sharing for the (i%%numDivs)th solver
+-slbdl , -strict-lbd-limit (int, default: 60)
+	Only clauses with an LBD score up to this value will be shared
+
+Diversification options:
+-div-phases (bool, default: 1)
+	Diversify solvers based on random sparse variable phases in addition to native diversification
+-div-seeds (bool, default: 1)
+	Diversify solvers with different random seeds
+-sat-config-dirs (string, default: config/sat/base)
+	Directory path, or comma-separated list of directory paths, to JSON solver configuration files
+-sat-config-files (string)
+	File path, or comma-separated list of file paths, to JSON solver configuration rules
+-satsolver (string, default: C)
+	Sequence of SAT solvers to cycle through (capital letter for true incremental solver, lowercase for pseudo-incremental solving): L|l:Lingeling C|c:CaDiCaL G|g:Glucose k:Kissat m:MergeSAT
+
+Production of UNSAT proofs:
+-cdel , -add-clause-deletions (int, default: 2)
+	0: don't add deletion statements to final proof, 1: add approximately via Bloom filter, 2: add exactly
+-cecpm , -clause-error-chance-per-mille (float, default: 0)
+	Chance per mille for tampering with some literal in a shared clause
+-compact-proof (int, default: 0)
+	1: Bring clause IDs in a compact shape when writing the final proof, 2: additionally deduplicate clauses
+-decpm , -deriv-error-chance-per-mille (float, default: 0)
+	Chance per mille for tampering with some on-the-fly checking clause derivation
+-dpa , -distributed-proof-assembly (bool, default: 1)
+	Distributed UNSAT proof assembly into a single file
+-extmem-disk-dir (string, default: .disk)
+	Directory where to create external memory files
+-fitp , -force-incremental-trusted-parser (bool, default: 0)
+	Always parse formula with trusted incremental parser even with -otfc=0
+-ipd , -inject-proof-data (string)
+	Specify directory with clauseepochs.X and proof.X.lrat files to use for immediate proof assembly
+-ipm , -interleave-proof-merging (bool, default: 1)
+	Interleave filtering and merging of proof lines
+-otfc , -on-the-fly-checking (bool, default: 0)
+	Enable on-the-fly checking of local derivations; generate and validate signatures for shared clauses
+-otfci , -on-the-fly-check-incremental (bool, default: 0)
+	Enable on-the-fly checking for incremental SAT solving - true(false) expects the (non)incremental ImpCheck programs
+-otfcm , -on-the-fly-check-model (bool, default: 1)
+	Also check satisfiable assignment in on-the-fly checking (prevents deletion of orig. clauses in one checker per process)
+-palrup (bool, default: 0)
+	Use the PalRUP parallel proof output format
+-palrup-binary (bool, default: 1)
+	Use binary (variable-bytelength) coding when outputting PalRUP proof files
+-palrup-check (bool, default: 0)
+	Check PalRUP proof immediately after its production
+-proof (string)
+	Enable UNSAT proof production, writing final LRAT proof to specified destination (output by rank zero)
+-proof-debugging (bool, default: 0)
+	Output debugging information into separate files - expensive and large!
+-proof-dir (string)
+	Directory to write partial proofs into (default: -log option
+-sat-preprocessor (string)
+	Executable which preprocesses CNF file
+-sswl , -sat-solving-wallclock-limit (float, default: 0)
+	Cancel job if not done solving after this many seconds (0: no limit)
+-uninvert-proof (bool, default: 1)
+	Uninvert combined inverted proof file
+
+* Incremental SAT solving options *
+
+-isp (bool, default: 1)
+	For incremental SAT job streams, run a local single-threaded SAT solver for latency hiding
+-nsdi , -nontrivial-solving-delay-initial (int, default: 10)
+	Milliseconds to wait with deploying non-trivial solving if an internal stream processor is present (-isp=1)
+-nsds , -nontrivial-solving-delay-subsequent (int, default: 5)
+	Milliseconds to wait with starting previously unsuccessful non-trivial solving if an internal stream processor is present (-isp=1)
+-tst , -trivial-solver-type (int, default: 1)
+	Type of the trivial sequential solver to run (0=Minisat 1=CaDiCaL)
+
+* SAT solving with preprocessing options *
+
+-ckas , -chain-kissat-after (bool, default: 0)
+	Additionally run Kissat on the result of Satsuma
+-oso , -override-sat-options (string)
+	In each distributed SAT sub-task, override the SAT solver process configuration with these Mallob options
+-pb , -preprocess-balancing (int, default: 1)
+	How to balance original vs. preprocessed task: -1=never start original task, 0=drop original immediately, 1=replace original gradually, 2=run both indefinitely
+-pef , -preprocess-expansion-factor (float, default: 1)
+	Expand preprocessed task over -pef times the task's running time up to that point
+-pjp , -preprocess-job-priority (float, default: 9999999)
+	Job priority to assign to preprocessed task
+-pl , -preprocess-lingeling (bool, default: 1)
+	Additionally run Lingeling as a preprocessor
+-presa , -preprocess-satsuma (bool, default: 0)
+	Run Satsuma instead of kissat
+
+* PalRUP checking options *
+
+-palrup-check-dir (string)
+	Global (shared) working directory for PalRUP checkers
+-palrup-clean (int, default: 1)
+	Clean up after PalRUP check. 0 performs no cleanup, 1 removes working directory, 2 additionaly removes proof
+-palrup-merge-buffer (int, default: 8192)
+	PalRUP checker merge buffer size in KiB
+-palrup-q-alpha (float, default: 0.5)
+	PalRUP checker queue alpha
+-palrup-q-size (int, default: 409600)
+	PalRUP checker queue size in KiB
+-palrup-read-buffer (int, default: 16384)
+	PalRUP checker read buffer size in KiB
+-palrup-strat (int, default: 3)
+	Check PalRUP proof using redistribution strategy 1 to 3
+-palrup-use-local-disks (bool, default: 0)
+	Expect PalRUP fragments to be stored on distributed disks
+-palrup-write-buffer (int, default: 16384)
+	PalRUP checker write buffer size in KiB
+
+* MaxSAT solving options *
+
+-maxpre (bool, default: 1)
+	true: use MaxPRE2 preprocessor library to preprocess instance; false: assume appropriately preprocessed file
+-maxpre-techniques (string, default: [bu]#)
+	Techniques string to forward to MaxPRE; minimum "#", (reasonable) maximum "[bu]#[buvsrgcHTVGR]"
+-maxpre-techniques-post (string, default: [bu]#[buvsrgcHTVGR])
+	Techniques string to forward to post- MaxPRE; minimum "#", (reasonable) maximum "[bu]#[buvsrgcHTVGR]"
+-maxpre-timeout (float, default: 9999999)
+	Timeout for MaxPRE in seconds
+-maxpre-timeout-post (float, default: 0)
+	Base timeout for post- MaxPRE in seconds (0: don't make improving MaxPRE calls)
+-maxsat-card-encoding (int, default: 3)
+	0=Warners, 1=DPW, 2=GTE, 3=heuristic, 4=virtual with theory
+-maxsat-focus-min (int, default: 1)
+	Minimum number of comb searchers to keep alive
+-maxsat-focus-period (float, default: 0)
+	Time period (s) until the lowest comb searcher is cancelled (0: never cancel)
+-maxsat-interval-skew (float, default: 0.5)
+	Skew to cut search intervals with
+-maxsat-searchers (int, default: 1)
+	Number of searchers to run in parallel
+-maxsat-sol-file (string)
+	Path to file to write intermediate solutions to
+-maxsat-write-job-lits (bool, default: 0)
+	Output all submitted jobs' literals into files for debugging
+
+* SMT solving options *
+
+-smt-args (string)
+	Additional comma-separated arguments (no whitespaces) to forward to Bitwuzla
+-smt-check-sat (bool, default: 0)
+	Check SAT models in Bitwuzla SAT connectors
+-smt-out-file (string)
+	Path to file to write SMT output and solutions to
+
+=== Performance ===
+
+-mbt , -message-batching-threshold (int, default: 8388608)
+	Employ batching of messages in batches of provided size
+-mempanic (bool, default: 1)
+	Monitor RAM usage per physical machine and switch to memory panic mode if necessary
+-mlpt , -max-lits-per-thread (int, default: 50000000)
+	If formula is larger than threshold, reduce #threads per PE until #threads=1 or until limit is met "on average"
+-pph , -processes-per-host (int, default: 0)
+	Tells Mallob how many MPI processes are executed on each physical host
+-rpa , -regular-process-allocation (bool, default: 0)
+	Signal that processes have been allocated regularly, i.e., the i-th machine hosts ranks c*i through c*i + c-1
+-sleep (int, default: 100)
+	Sleep this many microseconds between loop cycles of worker main thread
+-yield (bool, default: 0)
+	Yield manager thread whenever there are no new messages
+
+=== Debugging ===
+
+-checksums (bool, default: 0)
+	Compute and verify checksum for every job description transfer
+-cmp , -crash-monkey (float, default: 0)
+	Have an application thread crash with this probability each time it performs a certain action
+-delaymonkey (bool, default: 0)
+	Small chance for each MPI call to block for some random amount of time
+-ds , -deterministic-solving (bool, default: 0)
+	Perform deterministic solving (only with -mono) - considerably slower!
+-latencymonkey (bool, default: 0)
+	Block all MPI_Isend operations by a small randomized amount of time
+-mmpi , -monitor-mpi (bool, default: 0)
+	Launch an additional thread per process checking when the main thread is inside an MPI call
+-subproc-prefix (string)
+	Execute subprocesses with this prefix (e.g., "valgrind")
+-trace-dir (string, default: .)
+	Directory to write thread trace files to
+-wam , -watchdog-abort-millis (int, default: 10000)
+	Interval (in milliseconds) after which an un-reset watchdog in a worker's main thread will invoke a crash
+-watchdog (bool, default: 1)
+	Employ watchdog threads to detect unresponsive program flow
+-y , -sysstate-period (float, default: 1)
+	Period for aggregating and logging global system state
