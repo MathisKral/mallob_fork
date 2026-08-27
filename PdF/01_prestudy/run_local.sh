@@ -4,7 +4,7 @@ nbenchmarks="$(cat ${dir}/templates/benchmarks.txt.0 | wc -l)"
 
 # command
 cmd="
-`# run mallob with 2 clients` build/mallob -c=1 \
+`# run mallob with 2 clients` build/mallob -c=2 \
 `# templates for the 2 clients` -client-template=${dir}/templates/client-template.json \
 `# job templates` -job-template=${dir}/templates/job-template.json \
 `# job descriptions` -job-desc-template=${dir}/templates/benchmarks.txt \
