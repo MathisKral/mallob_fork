@@ -21,12 +21,12 @@
     "wallclock-limit": {
         "comment": "The wallclock time which may be spent computing until a job is cancelled. (0 = unlimited)",
         "type": "constant",
-        "params": [10]
+        "params": [300]
     },
     "arrival": {
         "comment": "The arrival of a job, given in seconds since the previous job's arrival (or since system start).",
         "type": "constant",
-        "params": [30]
+        "params": [0]
     },
     "burstsize": {
         "comment": "The number of jobs arriving simultaneously at each arrival event.",
@@ -34,4 +34,3 @@
         "params": [1]
     }
 }
-
