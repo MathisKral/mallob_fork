@@ -11,6 +11,9 @@ echo "#ranks: $SLURM_NTASKS"
 dir="./PdF/01_prestudy"
 nbenchmarks="$(cat ${dir}/templates/benchmarks.txt.0 | wc -l)"
 
+# log number of benchmarks
+echo "#benchmarks: $nbenchmarks"
+
 # ===============
 # 50% disturbance
 # ===============
