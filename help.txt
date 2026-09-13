@@ -20,10 +20,7 @@ c Application module MAXSAT: by Dominik Schreiber, Teemu Koukkari, and Jeremias 
 c Featuring MaxPRE preprocessor by Tuukka Korhonen, modified by Jeremias Berg and Dominik Schreiber
 c Featuring RustSAT by Christoph Jabs
 c 
-c Application module SMT: 
-c Featuring Bitwuzla by Aina Niemetz and Mathias Preiner
-c 
-0.001 0 Program options: -0o=0 -J=0 -SJ=0 -T=0 -adc=0 -aim=1 -ajpc=0 -ans=0 -apidir=.api -ba=4 -bem=1 -bicg=4 -br=0 -c=1 -cbbs=0 -cblm=1 -cblp=100000 -cdel=2 -cecpm=0 -cf=0 -cfci=10 -cfm=3 -cg=1 -ch=0 -checksums=0 -cjc=0 -ckas=0 -client-app-threads=1 -cm=1 -cmp=0 -colors=0 -compact-proof=0 -cpshm=0 -csm=3 -cusv=1 -dc=0 -decpm=0 -delaymonkey=0 -div-phases=1 -div-seeds=1 -dpa=1 -ds=0 -evpt=500 -evu=0 -extmem-disk-dir=.disk -fapii=0 -fcll=1 -fitp=0 -g=0 -gclls=0 -h=1 -huca=0 -iff=0 -ilbd=0 -inotify=1 -interface-fs=1 -interface-ipc=0 -ipm=1 -isp=1 -ivdh=0 -jc=4 -jcl=0 -jcup=0 -jjp=0 -js=0 -jwl=0 -l=1 -latencymonkey=0 -lbdpi=0 -lbdpo=0 -ljpc=32 -maxpre=1 -maxpre-techniques=[bu]# -maxpre-techniques-post=[bu]#[buvsrgcHTVGR] -maxpre-timeout=9999999 -maxpre-timeout-post=0 -maxsat-card-encoding=3 -maxsat-focus-min=1 -maxsat-focus-period=0 -maxsat-interval-skew=0.5 -maxsat-searchers=1 -maxsat-write-job-lits=0 -mbt=8388608 -mcips=10 -md=0 -mempanic=1 -mjps=0 -mlbdps=2 -mlpt=50000000 -mmpi=0 -mono-app=SAT -mono-incs=0 -mscf=5 -nec=10 -no-import=0 -nsdi=10 -nsds=5 -os=0 -otfc=0 -otfci=0 -otfcm=1 -p=0.1 -palrup=0 -palrup-binary=1 -palrup-check=0 -palrup-clean=1 -palrup-merge-buffer=8192 -palrup-q-alpha=0.5 -palrup-q-size=409600 -palrup-read-buffer=16384 -palrup-strat=3 -palrup-use-local-disks=0 -palrup-write-buffer=16384 -pb=1 -pbbm=0 -pef=1 -pjp=9999999 -pl=1 -pph=0 -pre-cleanup=0 -presa=0 -prisma=0 -proof-debugging=0 -ps=0 -q=0 -qcll=60 -qlbdl=60 -randlbd=0 -replay=0 -rlbd=3 -rpa=0 -rs=1 -rspaa=0 -s=0.5 -sat-config-dirs=config/sat/base -satsolver=C -scll=60 -scramble-lbds=0 -scsd=0 -seed=0 -sjd=0 -slbdl=60 -sleep=100 -smt-check-sat=0 -spl=-1 -sswl=0 -t=0 -terminate-abruptly=0 -tmp=/tmp -trace-dir=. -tst=1 -uninvert-proof=1 -v=2 -w=-1 -wam=10000 -warmup=0 -watchdog=1 -y=1 -yield=0 
+0.001 0 Program options: -0o=0 -J=0 -SJ=0 -T=0 -adc=0 -aim=1 -ajpc=0 -ans=0 -apidir=.api -ba=4 -bem=1 -bicg=4 -br=0 -c=1 -cbbs=0 -cblm=1 -cblp=100000 -cdel=2 -cecpm=0 -cf=0 -cfci=10 -cfm=3 -cg=1 -ch=0 -checksums=0 -cjc=0 -ckas=0 -client-app-threads=1 -cm=1 -cmp=0 -colors=0 -compact-proof=0 -cpshm=0 -csm=3 -cusv=1 -dc=0 -decpm=0 -delaymonkey=0 -div-phases=1 -div-seeds=1 -dpa=1 -ds=0 -evpt=500 -evu=0 -extmem-disk-dir=.disk -fapii=0 -fcll=1 -fitp=0 -g=0 -gclls=0 -h=1 -huca=0 -iff=0 -ilbd=0 -inotify=1 -interface-fs=1 -interface-ipc=0 -ipm=1 -isp=1 -ivdh=0 -jc=4 -jcl=0 -jcup=0 -jjp=0 -js=0 -jwl=0 -l=1 -latencymonkey=0 -lbdpi=0 -lbdpo=0 -ljpc=32 -maxpre=1 -maxpre-techniques=[bu]# -maxpre-techniques-post=[bu]#[buvsrgcHTVGR] -maxpre-timeout=9999999 -maxpre-timeout-post=0 -maxsat-card-encoding=3 -maxsat-focus-min=1 -maxsat-focus-period=0 -maxsat-interval-skew=0.5 -maxsat-searchers=1 -maxsat-write-job-lits=0 -mbt=8388608 -mcips=10 -md=0 -mempanic=1 -mjps=0 -mlbdps=2 -mlpt=50000000 -mmpi=0 -mono-app=SAT -mono-incs=0 -mscf=5 -nec=10 -no-import=0 -nsdi=10 -nsds=5 -os=0 -otfc=0 -otfci=0 -otfcm=1 -p=0.1 -palrup=0 -palrup-binary=1 -palrup-check=0 -palrup-clean=1 -palrup-merge-buffer=8192 -palrup-q-alpha=0.5 -palrup-q-size=409600 -palrup-read-buffer=16384 -palrup-strat=3 -palrup-use-local-disks=0 -palrup-write-buffer=16384 -pb=1 -pbbm=0 -pef=1 -pjp=9999999 -pl=1 -pph=0 -pre-cleanup=0 -presa=0 -prisma=0 -proof-debugging=0 -ps=0 -q=0 -qcll=60 -qlbdl=60 -randlbd=0 -replay=0 -rlbd=3 -rpa=0 -rs=1 -rspaa=0 -s=0.5 -sat-config-dirs=config/sat/base -satsolver=C -scll=60 -scramble-lbds=0 -scsd=0 -seed=0 -sjd=0 -slbdl=60 -sleep=100 -spl=-1 -sswl=0 -t=0 -terminate-abruptly=0 -tmp=/tmp -trace-dir=. -tst=1 -uninvert-proof=1 -v=2 -w=-1 -wam=10000 -warmup=0 -watchdog=1 -y=1 -yield=0 
 0.001 0 Usage: [mpiexec -np <num-mpi-processes> [mpi-options]] mallob [options]
 0.001 0 Each option must be given as "-key=value" or "--key=value" or (for boolean options only) just "-[-]key".
 
@@ -391,15 +388,6 @@ Production of UNSAT proofs:
 	Path to file to write intermediate solutions to
 -maxsat-write-job-lits (bool, default: 0)
 	Output all submitted jobs' literals into files for debugging
-
-* SMT solving options *
-
--smt-args (string)
-	Additional comma-separated arguments (no whitespaces) to forward to Bitwuzla
--smt-check-sat (bool, default: 0)
-	Check SAT models in Bitwuzla SAT connectors
--smt-out-file (string)
-	Path to file to write SMT output and solutions to
 
 === Performance ===
 
