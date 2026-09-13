@@ -10,6 +10,8 @@ echo "#ranks: $SLURM_NTASKS"
 
 dir="./PdF/01_prestudy"
 nbenchmarks="$(cat ${dir}/templates/benchmarks.txt.0 | wc -l)"
+job_time_limit=300
+time_limit=$(($nbenchmarks * ($job_time_limit + 1)))
 
 # log number of benchmarks
 echo "#benchmarks: $nbenchmarks"
@@ -29,7 +31,7 @@ cmd="
 `# job descriptions` -job-desc-template=${dir}/templates/benchmarks.txt \
 `# active jobs per client` -ajpc=1 \
 `# loaded jobs per client` -ljpc=8 \
-`# job wallclock limit` -jwl=300 \
+`# finish after n seconds` -T=${time_limit} \
 `# threads per process` -t=16 \
 `# shuffle job descriptions` -sjd=1 \
 `# portfolio` -satsolver=c
@@ -59,7 +61,7 @@ cmd="
 `# job descriptions` -job-desc-template=${dir}/templates/benchmarks.txt \
 `# active jobs per client` -ajpc=1 \
 `# loaded jobs per client` -ljpc=8 \
-`# job wallclock limit` -jwl=300 \
+`# finish after n seconds` -T=${time_limit} \
 `# threads per process` -t=16 \
 `# shuffle job descriptions` -sjd=1 \
 `# portfolio` -satsolver=c
@@ -90,7 +92,7 @@ cmd="
 `# job descriptions` -job-desc-template=${dir}/templates/benchmarks.txt \
 `# active jobs per client` -ajpc=1 \
 `# loaded jobs per client` -ljpc=8 \
-`# job wallclock limit` -jwl=300 \
+`# finish after n seconds` -T=${time_limit} \
 `# threads per process` -t=16 \
 `# shuffle job descriptions` -sjd=1 \
 `# portfolio` -satsolver=c
