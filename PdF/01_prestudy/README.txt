@@ -14,4 +14,4 @@
 - 62.5% undisturbed <-> 25%-100% disturbed (should ideally be equal)
 
 ## Benchmarks
-SAT competition 2021 → 400 benchmark
+SAT competition 2026 → 400 benchmark
