@@ -12,7 +12,7 @@ dir="./PdF/01_prestudy"
 results_dir="${dir}/results/${SLURM_JOB_ID}_results_undisdurb_100"
 nbenchmarks="$(cat ${dir}/templates/benchmarks.txt.0 | wc -l)"
 job_time_limit=300
-time_limit=$(($nbenchmarks * ($job_time_limit * 0.85))) # assume a job takes an average time of 0.85*300s
+time_limit=$(($nbenchmarks * ($job_time_limit - 50))) # assume a job takes an average time of 250s
 nprocs=64
 nthreads=3 # nprocs * nthreads = total cpus on one node
 
