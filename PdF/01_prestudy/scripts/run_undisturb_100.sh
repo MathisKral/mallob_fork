@@ -43,7 +43,7 @@ echo "#benchmarks: $nbenchmarks"
 echo "#nodes: $SLURM_NTASKS"
 echo "#processes: $nprocs"
 echo "#threads_per_process: $nthreads"
-echo "command: \n $cmd"
+echo "command: \ $cmd"
 echo "time limit: $time_limit seconds"
 
 # run job
