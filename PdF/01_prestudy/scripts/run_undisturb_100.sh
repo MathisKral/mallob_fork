@@ -9,12 +9,12 @@
 
 # configuration
 dir="./PdF/01_prestudy"
-results_dir="${dir}/results/${SLURM_JOB_ID}_results_undisdurb_100"
+results_dir="${dir}/results/${SLURM_JOB_ID}_results_undisturb_100"
 nbenchmarks="$(cat ${dir}/templates/benchmarks.txt.0 | wc -l)"
 job_time_limit=300
 time_limit=$(($nbenchmarks * ($job_time_limit - 50))) # assume a job takes an average time of 250s
-nprocs=64
-nthreads=3 # nprocs * nthreads = total cpus on one node
+nprocs=24
+nthreads=4 # nprocs * nthreads = total (physical) cpus on one node
 
 
 # command
@@ -28,7 +28,7 @@ cmd="
 `# finish after n seconds` -T=${time_limit} \
 `# threads per process` -t=${nthreads} \
 `# shuffle job descriptions` -sjd=1 \
-`# portfolio` -satsolver=k_
+`# portfolio` -satsolver=c_
 `# output file` -sro=${results_dir}/results.json \
 `# log dir` -log=${results_dir} \
 `# verbosity` -v=2 \
