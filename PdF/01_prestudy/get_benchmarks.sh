@@ -13,7 +13,7 @@ fi
 wget -P ${dir}/_benchmarks --content-disposition -i ${dir}/main_benchmarks_combined_2025_2026.uri
 
 # get the "unsolvable" instance (mallob timeout in competition results)
-wget -P ${dir}/_benchmarks_hard --content-disposition https://benchmark-database.de/file/1dce69ee6685597d6c56e5fd7a47f8e0
+wget -P ${dir}/_benchmarks_hard --content-disposition https://benchmark-database.de/file/25cfa39c61494e9e793f6c6a9ec44be3
 
 # unpack benchmarks
 # for file in ${dir}/benchmarks/*; do
