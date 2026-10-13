@@ -32,6 +32,7 @@ cmd="
 `# output file` -sro=${results_dir}/results.json \
 `# log dir` -log=${results_dir} \
 `# verbosity` -v=2 \
+`# be quiet -q \`
 `# dont wait for subprocesses to finish` -terminate-abruptly=1 \
 `# sat config directory` -sat-config-dirs=config/sat/base/ \
 `# preprocessor configuration` -preprocess-config=config/satwithpre/actors_onechain.json

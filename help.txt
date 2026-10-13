@@ -12,7 +12,8 @@ c Featuring CaDiCaL by Armin Biere, Mathias Fleury, Katalin Fazekas, Florian Pol
 c Featuring Minisat by Niklas Een and Niklas Sörensson
 c 
 c Application module SATWITHPRE: 
-c Featuring Satsuma by Markus Anders, with interface code by Anna Görth
+c Featuring Satsuma by Markus Anders
+c Featuring interface and proof production code by Anna Görth
 c 
 c Application module PALRUPCHECK: by Dominik Schreiber and Ruben Götz
 c 
@@ -20,7 +21,12 @@ c Application module MAXSAT: by Dominik Schreiber, Teemu Koukkari, and Jeremias 
 c Featuring MaxPRE preprocessor by Tuukka Korhonen, modified by Jeremias Berg and Dominik Schreiber
 c Featuring RustSAT by Christoph Jabs
 c 
-0.001 0 Program options: -0o=0 -J=0 -SJ=0 -T=0 -adc=0 -aim=1 -ajpc=0 -ans=0 -apidir=.api -ba=4 -bem=1 -bicg=4 -br=0 -c=1 -cbbs=0 -cblm=1 -cblp=100000 -cdel=2 -cecpm=0 -cf=0 -cfci=10 -cfm=3 -cg=1 -ch=0 -checksums=0 -cjc=0 -ckas=0 -client-app-threads=1 -cm=1 -cmp=0 -colors=0 -compact-proof=0 -cpshm=0 -csm=3 -cusv=1 -dc=0 -decpm=0 -delaymonkey=0 -div-phases=1 -div-seeds=1 -dpa=1 -ds=0 -evpt=500 -evu=0 -extmem-disk-dir=.disk -fapii=0 -fcll=1 -fitp=0 -g=0 -gclls=0 -h=1 -huca=0 -iff=0 -ilbd=0 -inotify=1 -interface-fs=1 -interface-ipc=0 -ipm=1 -isp=1 -ivdh=0 -jc=4 -jcl=0 -jcup=0 -jjp=0 -js=0 -jwl=0 -l=1 -latencymonkey=0 -lbdpi=0 -lbdpo=0 -ljpc=32 -maxpre=1 -maxpre-techniques=[bu]# -maxpre-techniques-post=[bu]#[buvsrgcHTVGR] -maxpre-timeout=9999999 -maxpre-timeout-post=0 -maxsat-card-encoding=3 -maxsat-focus-min=1 -maxsat-focus-period=0 -maxsat-interval-skew=0.5 -maxsat-searchers=1 -maxsat-write-job-lits=0 -mbt=8388608 -mcips=10 -md=0 -mempanic=1 -mjps=0 -mlbdps=2 -mlpt=50000000 -mmpi=0 -mono-app=SAT -mono-incs=0 -mscf=5 -nec=10 -no-import=0 -nsdi=10 -nsds=5 -os=0 -otfc=0 -otfci=0 -otfcm=1 -p=0.1 -palrup=0 -palrup-binary=1 -palrup-check=0 -palrup-clean=1 -palrup-merge-buffer=8192 -palrup-q-alpha=0.5 -palrup-q-size=409600 -palrup-read-buffer=16384 -palrup-strat=3 -palrup-use-local-disks=0 -palrup-write-buffer=16384 -pb=1 -pbbm=0 -pef=1 -pjp=9999999 -pl=1 -pph=0 -pre-cleanup=0 -presa=0 -prisma=0 -proof-debugging=0 -ps=0 -q=0 -qcll=60 -qlbdl=60 -randlbd=0 -replay=0 -rlbd=3 -rpa=0 -rs=1 -rspaa=0 -s=0.5 -sat-config-dirs=config/sat/base -satsolver=C -scll=60 -scramble-lbds=0 -scsd=0 -seed=0 -sjd=0 -slbdl=60 -sleep=100 -spl=-1 -sswl=0 -t=0 -terminate-abruptly=0 -tmp=/tmp -trace-dir=. -tst=1 -uninvert-proof=1 -v=2 -w=-1 -wam=10000 -warmup=0 -watchdog=1 -y=1 -yield=0 
+c Application module SMT: 
+c Featuring Bitwuzla by Aina Niemetz and Mathias Preiner
+c 
+c Application module SWEEP: by Dominik Schreiber and Niccolò Rigi-Luperti
+c 
+0.001 0 Program options: -0o=0 -J=0 -SJ=0 -T=0 -adc=0 -aim=1 -ajpc=0 -ans=0 -apidir=.api -ba=4 -bem=1 -bicg=4 -br=0 -c=1 -cbbs=0 -cblm=1 -cblp=100000 -cdel=2 -cecpm=0 -cf=0 -cfci=10 -cfm=3 -cg=1 -ch=0 -checksums=0 -cjc=0 -cjtcp=0 -client-app-threads=1 -cm=1 -cmp=0 -colors=0 -compact-proof=0 -cpshm=0 -csa=1 -csm=3 -cusv=1 -dc=0 -decpm=0 -delaymonkey=0 -div-phases=1 -div-seeds=1 -dpa=1 -ds=0 -evpt=500 -evu=0 -extmem-disk-dir=.disk -fapii=0 -fcll=1 -fitp=0 -g=0 -gclls=0 -h=1 -huca=0 -iff=0 -ilbd=0 -inotify=1 -interface-fs=1 -interface-ipc=0 -ipm=1 -isp=1 -ist=1 -ivdh=0 -jc=4 -jcl=0 -jcup=0 -jjp=0 -js=0 -jwl=0 -l=1 -latencymonkey=0 -lbdpi=0 -lbdpo=0 -ljpc=32 -maxpre=1 -maxpre-techniques=[bu]# -maxpre-techniques-post=[bu]#[buvsrgcHTVGR] -maxpre-timeout=9999999 -maxpre-timeout-post=0 -maxsat-card-encoding=3 -maxsat-focus-min=1 -maxsat-focus-period=0 -maxsat-interval-skew=0.5 -maxsat-searchers=1 -maxsat-write-job-lits=0 -mbt=8388608 -mcips=10 -md=0 -mempanic=1 -mjps=0 -mlbdps=2 -mlpt=50000000 -mmpi=0 -mono-app=SAT -mono-incs=0 -mscf=5 -nec=10 -nisa=SAT -nisd=0 -no-import=0 -nsdi=10 -nsds=5 -os=0 -otfc=0 -otfci=0 -otfcm=1 -p=0.1 -palrup=0 -palrup-binary=1 -palrup-check=0 -palrup-clean=1 -palrup-merge-buffer=8192 -palrup-q-alpha=0.5 -palrup-q-size=409600 -palrup-read-buffer=16384 -palrup-strat=3 -palrup-use-local-disks=0 -palrup-write-buffer=16384 -pb=1 -pbbm=0 -pcm=0 -pef=1 -pjp=9999999 -pph=0 -pre-cleanup=0 -prepro-proofs=0 -preprocess-config=config/satwithpre/actors_default.json -preprocess-sweepnsat=0 -prisma=0 -proof-debugging=0 -ps=0 -psp=1 -q=0 -qcll=60 -qlbdl=60 -randlbd=0 -replay=0 -rlbd=3 -rpa=0 -rs=1 -rspaa=0 -s=0.5 -sat-config-dirs=config/sat/base -satsolver=C -scll=60 -scramble-lbds=0 -scsd=0 -seed=0 -sjd=0 -slbdl=60 -sleep=100 -smt-check-sat=0 -spl=-1 -sswl=0 -swic=1 -swmd=9999999 -swmi=9999999 -swmp=1000000 -swmpay=100000000 -swmwi=3 -swqt=1 -swrc=0 -swsk=1 -swskr=0.01 -swskw=2 -swslw=0 -swsp=0.05 -swsw=1 -swtws=0 -swvrb=0 -swxr=1 -swxs=1 -t=0 -terminate-abruptly=0 -tmp=/tmp -trace-dir=. -tst=1 -uninvert-proof=1 -v=2 -w=-1 -wam=10000 -warmup=0 -watchdog=1 -y=1 -yield=0 
 0.001 0 Usage: [mpiexec -np <num-mpi-processes> [mpi-options]] mallob [options]
 0.001 0 Each option must be given as "-key=value" or "--key=value" or (for boolean options only) just "-[-]key".
 
@@ -145,6 +151,8 @@ c
 	Continuous growth of job demands
 -cjc , -cross-job-communication (bool, default: 0)
 	Enable communication across jobs, such as cross-problem clause sharing, within user-specified job groups
+-cjtcp , -cross-job-to-client-parent (bool, default: 0)
+	Allow distributed jobs to send cross-job shared information to their client parent
 -g , -growth-period (float, default: 0)
 	Grow job demand exponentially every t seconds (0: immediate full growth)
 -jcl , -job-cpu-limit (float, default: 0)
@@ -210,6 +218,8 @@ Clause sharing configuration:
 	0 = no filtering, 1 = bloom filters, 2 = exact filters, 3 = exact filters with distributed filtering in a 2nd all-reduction
 -ch , -collect-clause-history (bool, default: 0)
 	Employ clause history collection mechanism
+-csa , -cross-share-all (bool, default: 1)
+	Cross-share (-cjc=1) clauses from intra-job sharing automatically
 -csm , -clause-store-mode (int, default: 3)
 	-1 = static by length w/ mixed LBD, 0 = static by length, 1 = static by LBD, 2 = adaptive by length + -mlbdps option, 3 = simplified adaptive
 -cusv , -compensate-unused-sharing-volume (bool, default: 1)
@@ -276,6 +286,8 @@ Production of UNSAT proofs:
 	Chance per mille for tampering with some literal in a shared clause
 -compact-proof (int, default: 0)
 	1: Bring clause IDs in a compact shape when writing the final proof, 2: additionally deduplicate clauses
+-core (string)
+	[Only with -proof=...] Output an UNSAT core to the specified path
 -decpm , -deriv-error-chance-per-mille (float, default: 0)
 	Chance per mille for tampering with some on-the-fly checking clause derivation
 -dpa , -distributed-proof-assembly (bool, default: 1)
@@ -300,8 +312,12 @@ Production of UNSAT proofs:
 	Use binary (variable-bytelength) coding when outputting PalRUP proof files
 -palrup-check (bool, default: 0)
 	Check PalRUP proof immediately after its production
+-pcm , -proof-compression-mode (int, default: 0)
+	0: No compression; 1: xz compression; 2: Vaskin-Goetz compression
+-prepro-proofs (bool, default: 0)
+	Save proofs for each preprocessing step (requires -proof-dir to be set)
 -proof (string)
-	Enable UNSAT proof production, writing final LRAT proof to specified destination (output by rank zero)
+	Enable UNSAT proof production, writing final LRAT proof to specified destination (output by rank zero; can be /dev/null)
 -proof-debugging (bool, default: 0)
 	Output debugging information into separate files - expensive and large!
 -proof-dir (string)
@@ -317,6 +333,12 @@ Production of UNSAT proofs:
 
 -isp (bool, default: 1)
 	For incremental SAT job streams, run a local single-threaded SAT solver for latency hiding
+-ist , -inc-sat-tasks (bool, default: 1)
+	If false, run non-incremental distributed SAT tasks for each query
+-nisa , -noninc-sat-app (string, default: SAT)
+	Application to use for non-incremental distributed SAT tasks (SAT or SATWITHPRE)
+-nisd , -noninc-solve-delay (int, default: 0)
+	If > 0, spawns an *additional*, non-incremental SAT task after X milliseconds
 -nsdi , -nontrivial-solving-delay-initial (int, default: 10)
 	Milliseconds to wait with deploying non-trivial solving if an internal stream processor is present (-isp=1)
 -nsds , -nontrivial-solving-delay-subsequent (int, default: 5)
@@ -326,8 +348,6 @@ Production of UNSAT proofs:
 
 * SAT solving with preprocessing options *
 
--ckas , -chain-kissat-after (bool, default: 0)
-	Additionally run Kissat on the result of Satsuma
 -oso , -override-sat-options (string)
 	In each distributed SAT sub-task, override the SAT solver process configuration with these Mallob options
 -pb , -preprocess-balancing (int, default: 1)
@@ -336,10 +356,14 @@ Production of UNSAT proofs:
 	Expand preprocessed task over -pef times the task's running time up to that point
 -pjp , -preprocess-job-priority (float, default: 9999999)
 	Job priority to assign to preprocessed task
--pl , -preprocess-lingeling (bool, default: 1)
-	Additionally run Lingeling as a preprocessor
--presa , -preprocess-satsuma (bool, default: 0)
-	Run Satsuma instead of kissat
+-preprocess-config (string, default: config/satwithpre/actors_default.json)
+	JSON file to configure the cascading preprocessing actors
+-preprocess-log (string)
+	Directory to log preprocessor formulas and models to
+-preprocess-sweepnsat (bool, default: 0)
+	run concurrently a SWEEP-App and a SAT-App, with cross job unit- and equivalence-sharing (Sweep'n'SAT from FMCAD26)
+-psp , -preprocess-sweep-priority (float, default: 1)
+	Ressource split ratio between SWEEP and SAT Job in Sweep'n'Sat. Default 1.000f is a 50/50 ressource split
 
 * PalRUP checking options *
 
@@ -388,6 +412,54 @@ Production of UNSAT proofs:
 	Path to file to write intermediate solutions to
 -maxsat-write-job-lits (bool, default: 0)
 	Output all submitted jobs' literals into files for debugging
+
+* SMT solving options *
+
+-smt-args (string)
+	Additional comma-separated arguments (no whitespaces) to forward to Bitwuzla
+-smt-check-sat (bool, default: 0)
+	Check SAT models in Bitwuzla SAT connectors
+-smt-out-file (string)
+	Path to file to write SMT output and solutions to
+
+* Options for application sweep *
+
+-swic , -sweep-initial-congruence (bool, default: 1)
+	Let each solver do clausal congruence closure once before sweeping
+-swmd , -sweep-max-depth (int, default: 9999999)
+	maximum environment depth
+-swmi , -sweep-max-iterations (int, default: 9999999)
+	maximum number of iterations
+-swmp , -sweep-max-kitten-prop (int, default: 1000000)
+	Maximum number of kitten propagations per kitten SAT Call
+-swmpay , -sweep-max-payload (int, default: 100000000)
+	max payload for which the SweepApp starts, otherwise it directly exits
+-swmwi , -sweep-max-weak-iters (int, default: 3)
+	max number of iterations that are allowed to end without being successful before the Job is terminated
+-swqt , -sweep-solver-quiet (int, default: 1)
+	whether the solver-native messages should be completely disabled (kissat quiet option)
+-swrc , -sweep-resweep-chance (int, default: 0)
+	chance that a solver directly resweeps a variable after it found an equivalence (in per mille)
+-swsk , -sweep-signal-kitten (bool, default: 1)
+	Signal to kittens when an iteration has been skipped such that they can exit their propagation loop immediately
+-swskr , -sweep-skip-ratio (float, default: 0.01)
+	minimum ratio of found Eqs+Units versus number of swept variables to not skip an iteration
+-swskw , -sweep-skip-window (float, default: 2)
+	size of moving window for which the skip-ratio is checked (in seconds)
+-swslw , -sweep-show-lag-warn (bool, default: 0)
+	show 'lagging' solvers that are in the same sweep(...) call since a long time
+-swsp , -sweep-sharing-period (float, default: 0.05)
+	The sharing period (of equivalences and units), in seconds
+-swsw , -sweep-shuffle-work (bool, default: 1)
+	Shuffle the work that is provided at the start of each iteration
+-swtws , -sweep-track-worksteals (bool, default: 0)
+	track information about individual worksteal events in the Sweep App, and show them at the end
+-swvrb , -sweep-solver-verbosity (int, default: 0)
+	verbosity of the kissat sweeping solvers in the SWEEP app
+-swxr , -sweep-xj-recv (bool, default: 1)
+	receive units via cross-job-communication -cjc
+-swxs , -sweep-xj-send (bool, default: 1)
+	send units and equivalences via cross-job-communication -cjc
 
 === Performance ===
 
