@@ -1,21 +1,13 @@
 #!/bin/bash
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=120
-#SBATCH --ntasks-per-core=2  # use hyperthreading
-#SBATCH -J mallob-disturbance-62_5
-
-# ATTENTION: this benchmark should be performed on partition "diffie" or "hellman"
 
 # configuration
+results_dir="./log"
 bench_dir="./PdF/01_prestudy"
-results_dir="$./PdF/02_historic_clause_storage/results/${SLURM_JOB_ID}_results_undisturb_62_5"
 nbenchmarks="$(cat ${bench_dir}/templates/benchmarks.txt.0 | wc -l)"
 job_time_limit=300
-# time_limit=$(($nbenchmarks * ($job_time_limit - 50))) # assume a job takes an average time of 250s
 time_limit=600
-nprocs=15
-nthreads=4 # nprocs * nthreads = total cpus on one node
+nprocs=4
+nthreads=2 # nprocs * nthreads = total cpus on one node
 
 
 # command
@@ -43,7 +35,6 @@ cmd="
 # log
 echo "CONFIGURATION =============================="
 echo "#benchmarks: $nbenchmarks"
-echo "#nodes: $SLURM_NTASKS"
 echo "#processes: $nprocs"
 echo "#threads_per_process: $nthreads"
 echo "command: \ $cmd"
