@@ -53,7 +53,7 @@ AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& par
             setup.slotsForSumOfLengthAndLbd = _params.groupClausesByLengthLbdSum();
             setup.numLiterals = _job->getBufferLimit(MyMpi::size(MPI_COMM_WORLD), false);
             return setup;
-        }(), _job)
+        }(), _job, params.clauseHistoryMaxSlots.val)
     ),
     _cross_job_clause_sharer(_job->getDescription().getGroupId() > 0 && _job->getJobTree().isRoot() ?
         new InterJobClauseSharer(_params, job->getDescription().getGroupId(), job->getContextId(), job->toStr()) : nullptr),

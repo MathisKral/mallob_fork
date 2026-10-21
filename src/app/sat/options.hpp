@@ -52,6 +52,8 @@ OPTION_GROUP(grpAppSatSharing, "app/sat/sharing", "Clause sharing configuration"
     "Set clear interval of clauses in solver filters (-1: never clear, 0: always clear")
  OPT_BOOL(collectClauseHistory,           "ch", "collect-clause-history",                false,
     "Employ clause history collection mechanism")
+ OPT_INT(clauseHistoryMaxSlots,             "chs", "clause-history-max-slots",             3,        1,    5, 
+   "Max number of slots for the historic clause storage")
  OPT_BOOL(compensateUnusedSharingVolume,    "cusv", "compensate-unused-sharing-volume",  true,
     "Compensate for unused or filtered parts of clause buffer in the next sharings")
  OPT_INT(freeClauseLengthLimit, "fcll", "free-clause-length-limit", 1, 0, LARGE_INT, "Max. length of clauses which are considered \"free\" for sharing")

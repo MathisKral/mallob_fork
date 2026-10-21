@@ -63,7 +63,7 @@ private:
     
     private:
         AdaptiveClauseStore::Setup _setup;
-        int _max_same_breadth_slots {3};
+        const int _max_same_breadth_slots;
         // storage
         struct Slot {
             int epochBegin;
@@ -84,7 +84,7 @@ private:
         int _num_open_tasks {0};
 
     public:
-        Worker(const AdaptiveClauseStore::Setup& setup) : _setup(setup),
+        Worker(const AdaptiveClauseStore::Setup& setup, const int maxSameSlots) : _setup(setup), _max_same_breadth_slots(maxSameSlots),
                 _filter_store(new AdaptiveClauseStore(_setup)),
                 _filter(new ExactClauseFilter(*_filter_store, std::numeric_limits<int>::max(), _setup.maxEffectiveClauseLength)) {
             _bg_worker.run([this]() {runBackgroundWorker();});
@@ -349,8 +349,10 @@ private:
     std::vector<std::pair<int, int>> _missing_epoch_intervals;
 
 public:
-    HistoricClauseStorage(const AdaptiveClauseStore::Setup& setup, BaseSatJob* job) : 
-        _job(job), _worker(setup)  {}
+    HistoricClauseStorage(const AdaptiveClauseStore::Setup& setup, BaseSatJob* job, const int maxSameSlots) : 
+        _job(job), _worker(setup, maxSameSlots)  {
+            LOG(V4_VVER, "HCS initialized with max %i same size slots.", maxSameSlots);
+        }
 
     void importSharing(int epoch, std::vector<int>&& clauses) {
         
