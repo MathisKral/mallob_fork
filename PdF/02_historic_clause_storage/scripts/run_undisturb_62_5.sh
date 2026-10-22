@@ -10,7 +10,7 @@
 # configuration
 bench_dir="./PdF/01_prestudy"
 results_dir="./PdF/02_historic_clause_storage/results/${SLURM_JOB_ID}_results_undisturb_62_5"
-nbenchmarks="$(cat ${dir}/templates/benchmarks.txt.0 | wc -l)"
+nbenchmarks="$(cat ${bench_dir}/templates/benchmarks.txt.0 | wc -l)"
 job_time_limit=300
 time_limit=$(($nbenchmarks * ($job_time_limit - 100))) # assume a job takes an average time of 200s
 nprocs=15
