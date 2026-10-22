@@ -36,7 +36,7 @@ cmd="
 `# sat config directory` -sat-config-dirs=config/sat/base/ \
 `# preprocessor configuration` -preprocess-config=config/satwithpre/actors_onechain.json \
 `# activate historic clause storage` -ch=1 \
-`# set number of same size slots for historic clause storage (default=3)` -chs=3
+`# set number of same size slots for historic clause storage (default=3)` -chs=1
 "
 
 # log
