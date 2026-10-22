@@ -351,7 +351,7 @@ private:
 public:
     HistoricClauseStorage(const AdaptiveClauseStore::Setup& setup, BaseSatJob* job, const int maxSameSlots) : 
         _job(job), _worker(setup, maxSameSlots)  {
-            LOG(V4_VVER, "HCS initialized with max %i same size slots.", maxSameSlots);
+            LOG(V4_VVER, "HCS initialized with max %i same size slots.\n", maxSameSlots);
         }
 
     void importSharing(int epoch, std::vector<int>&& clauses) {

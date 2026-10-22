@@ -1,13 +1,20 @@
 #!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=120
+#SBATCH --ntasks-per-core=2  # use hyperthreading
+#SBATCH -J mallob-disturbance-62_5
+
+# ATTENTION: this benchmark should be performed on partition "diffie" or "hellman"
 
 # configuration
-results_dir="./log"
 bench_dir="./PdF/01_prestudy"
-nbenchmarks="$(cat ${bench_dir}/templates/benchmarks.txt.0 | wc -l)"
+results_dir="./PdF/02_historic_clause_storage/results/${SLURM_JOB_ID}_results_undisturb_62_5"
+nbenchmarks="$(cat ${dir}/templates/benchmarks.txt.0 | wc -l)"
 job_time_limit=300
-time_limit=600
-nprocs=4
-nthreads=2 # nprocs * nthreads = total cpus on one node
+time_limit=$(($nbenchmarks * ($job_time_limit - 100))) # assume a job takes an average time of 200s
+nprocs=15
+nthreads=4 # nprocs * nthreads = total cpus on one node
 
 
 # command
@@ -24,17 +31,18 @@ cmd="
 `# portfolio (k_ when satwithpre)` -satsolver=k_
 `# output file` -sro=${results_dir}/results.json \
 `# log dir` -log=${results_dir} \
-`# verbosity` -v=4 \
+`# verbosity` -v=2 \
 `# dont wait for subprocesses to finish` -terminate-abruptly=1 \
 `# sat config directory` -sat-config-dirs=config/sat/base/ \
 `# preprocessor configuration` -preprocess-config=config/satwithpre/actors_onechain.json \
-`# activate historic clause storage` -ch=1 \
-`# set max same size slots for hcs` -chs=3
+`# activate historic clause storage` -hc=1 \
+`# set number of same size slots for historic clause storage (default=3)` -hcs=3
 "
 
 # log
 echo "CONFIGURATION =============================="
 echo "#benchmarks: $nbenchmarks"
+echo "#nodes: $SLURM_NTASKS"
 echo "#processes: $nprocs"
 echo "#threads_per_process: $nthreads"
 echo "command: \ $cmd"
