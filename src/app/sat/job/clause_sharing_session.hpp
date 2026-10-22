@@ -164,7 +164,6 @@ public:
                 if (_cls_history) {
                     InplaceClauseAggregation(_broadcast_clause_buffer).stripToRawBuffer();
                     _cls_history->importSharing(_epoch, std::move(_broadcast_clause_buffer));
-                    LOG(V4_VVER, "HCS import %i clauses during AGGREGATING_CLAUSES stage\n", _broadcast_clause_buffer.size());
                 }
                 _stage = DONE;
             }
@@ -193,7 +192,6 @@ public:
                     // Add clause batch to history
                     std::vector<int> copy(_broadcast_clause_buffer);
                     _cls_history->importSharing(_epoch, std::move(copy));
-                    LOG(V4_VVER, "HCS import %i clauses during AGGREGATING_FILTER stage\n", copy.size());
                 }
                 if (_has_clause_listener) _clause_listener(_broadcast_clause_buffer);
             }
