@@ -14,6 +14,7 @@
 
 #include "app/sat/data/clause.hpp"
 #include "app/sat/data/produced_clause_candidate.hpp"
+#include "app/sat/job/generic_clause_storage.hpp"
 #include "app/sat/sharing/filter/exact_clause_filter.hpp"
 #include "app/sat/sharing/filter/generic_clause_filter.hpp"
 #include "app/sat/sharing/store/adaptive_clause_store.hpp"
@@ -33,31 +34,9 @@
 
 bool areIntervalsOverlapping(int begin1, int end1, int begin2, int end2);
 
-class HistoricClauseStorage {
+class HistoricClauseStorage : public GenericClauseStorage{
 
 private:
-    struct StorageDiagnostics {
-        int numLitsInStorage;
-        int numClausesInStorage;
-        std::string slotLayout;
-    };
-
-    struct BackgroundTask {
-        enum Type {INSERT, INSERT_AND_IMPORT, REQUEST} type;
-        int epochBegin;
-        int epochEnd;
-        bool fromLeftChild {false};
-        std::vector<int> clauses;
-        bool finished {false};
-        StorageDiagnostics storageDiagnostics;
-
-        BackgroundTask(Type type, int epochBegin, int epochEnd, const std::vector<int>& clauses, bool fromLeftChild) : 
-            type(type), epochBegin(epochBegin), epochEnd(epochEnd), 
-            fromLeftChild(fromLeftChild), clauses(clauses) {}
-        BackgroundTask(Type type, int epochBegin, int epochEnd, std::vector<int>&& clauses, bool fromLeftChild) : 
-            type(type), epochBegin(epochBegin), epochEnd(epochEnd), 
-            fromLeftChild(fromLeftChild), clauses(std::move(clauses)) {}
-    };
 
     class Worker {
     
