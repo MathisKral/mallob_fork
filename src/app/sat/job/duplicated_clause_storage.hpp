@@ -1,4 +1,4 @@
-#pragma once
+#pragma once // ifndef ??
 
 #include "app/sat/data/clause.hpp"
 #include "app/sat/data/produced_clause_candidate.hpp"
@@ -165,6 +165,8 @@ private:
     BaseSatJob* _job;
     Worker _worker;
 
+    int _last_shared_epoch {-1};
+
 public:
     DuplicatedClauseStorage(const Parameters& params, BaseSatJob* job) :
         _job(job), _worker(params) {
@@ -176,7 +178,13 @@ public:
         _worker.addTask(BackgroundTask::INSERT, epoch, std::move(clauses), false);
 
         // request database if missing
-        requestMissingStorage();
+        if (_last_shared_epoch != epoch - 1) {
+            _last_shared_epoch = epoch - 1; // for the correct request message
+            requestMissingStorage();
+        }
+
+        // update epoch counter
+        _last_shared_epoch = epoch;
     }
 
     void handleIncomingMissingInterval(int epochBegin, int epochEnd, std::vector<int>&& clauses) {
@@ -214,6 +222,9 @@ public:
 
 private:
     void requestMissingStorage() {
-
+        LOG(V4_VVER, "DCS requesting database from parent\n");
+        JobMessage msg(_job->getId(), _job->getContextId(), _job->getRevision(), _last_shared_epoch, MSG_REQUEST_HISTORIC_CLAUSES);
+        msg.payload = {_last_shared_epoch, _last_shared_epoch};
+        _job->getJobTree().sendToParent(msg);
     }
 };
