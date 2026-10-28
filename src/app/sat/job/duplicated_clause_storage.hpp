@@ -16,7 +16,6 @@
 #include "util/params.hpp"
 #include "util/sys/background_worker.hpp"
 #include "util/sys/threading.hpp"
-#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <list>
@@ -117,13 +116,13 @@ private:
 
         void processInsertTask(BackgroundTask& task) {
             // add clauses to database
-            auto [accepted, total] = addClausesIntoDatabase(_cdb, task.clauses, task.epochBegin, task.type == BackgroundTask::INSERT_AND_IMPORT);
+            auto [accepted, total] = addClausesIntoDatabase(_cdb, task.clauses, task.epochEnd, task.type == BackgroundTask::INSERT_AND_IMPORT);
             LOG(V4_VVER, "DCS added %i/%i clauses into the database\n", accepted, total);
         }
 
         void addStorageDiagnosticsToTask(BackgroundTask& task) {
             task.storageDiagnostics.numClausesInStorage = _filter->size(0);
-            task.storageDiagnostics.numLitsInStorage = _cdb.getCurrentlyUsedLiterals();
+            task.storageDiagnostics.numLitsInStorage = 0;
             task.storageDiagnostics.slotLayout = "-";
         }
 
@@ -170,7 +169,7 @@ private:
 public:
     DuplicatedClauseStorage(const Parameters& params, BaseSatJob* job) :
         _job(job), _worker(params) {
-            log(V4_VVER, "DCS initialized with\n");
+            LOG(V4_VVER, "DCS initialized\n");
         }
 
     void importSharing(int epoch, std::vector<int>&& clauses) {
@@ -180,6 +179,7 @@ public:
         // request database if missing
         if (_last_shared_epoch != epoch - 1) {
             _last_shared_epoch = epoch - 1; // for the correct request message
+            LOG(V4_VVER, "DCS database out of date → requesting import from parent\n");
             requestMissingStorage();
         }
 
@@ -188,12 +188,12 @@ public:
     }
 
     void handleIncomingMissingInterval(int epochBegin, int epochEnd, std::vector<int>&& clauses) {
-        LOG(V4_VVER, "DCS receiving clauses from parent worker, buflen=%i", clauses.size());
+        LOG(V4_VVER, "DCS receiving clauses from parent worker, buflen=%i\n", clauses.size());
         _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, epochEnd, std::move(clauses), false);
     }
 
     void handleRequestMissingInterval(bool leftChild, int epochBegin, int epochEnd) {
-        LOG(V4_VVER, "DCS got request for database at epoch %i", epochEnd);
+        LOG(V4_VVER, "DCS got request for database\n");
         _worker.addTask(BackgroundTask::REQUEST, epochEnd, std::vector<int>(), leftChild);
     }
 
@@ -212,11 +212,11 @@ public:
                     _job->getJobTree().sendToRightChild(msg);
                 }
             } else if (task.type == BackgroundTask::INSERT_AND_IMPORT) {
-                LOG(V4_VVER, "DCS digest historic clauses, buflen=%i", task.clauses.size());
+                LOG(V4_VVER, "DCS digest historic clauses, buflen=%i\n", task.clauses.size());
                 _job->digestHistoricClauses(task.epochBegin, task.epochEnd, std::move(task.clauses));
             }
 
-            LOG(V4_VVER, "DCS %i cls / %i lits\n", task.storageDiagnostics.numClausesInStorage, task.storageDiagnostics.numLitsInStorage);
+            LOG(V4_VVER, "DCS contains %i cls\n", task.storageDiagnostics.numClausesInStorage);
         }
     }
 
