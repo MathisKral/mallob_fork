@@ -50,8 +50,8 @@ OPTION_GROUP(grpAppSatSharing, "app/sat/sharing", "Clause sharing configuration"
     "Clause buffer discount factor: reduce buffer size per PE by <factor> each depth")
  OPT_FLOAT(clauseFilterClearInterval,       "cfci", "clause-filter-clear-interval",      10,       -1,  LARGE_INT,
     "Set clear interval of clauses in solver filters (-1: never clear, 0: always clear")
- OPT_BOOL(collectClauseHistory,           "ch", "collect-clause-history",                false,
-    "Employ clause history collection mechanism")
+ OPT_INT(collectClauseHistory,               "ch", "collect-clause-history",             -1, -1, 1, 
+   "Employ clause history collection mechanism; -1 = none, 0 = historic clause storage, 1 = duplucated clause storage")
  OPT_INT(clauseHistoryMaxSlots,             "chs", "clause-history-max-slots",             3,        1,    5, 
    "Max number of slots for the historic clause storage")
  OPT_BOOL(compensateUnusedSharingVolume,    "cusv", "compensate-unused-sharing-volume",  true,

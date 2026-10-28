@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#define MALLOB_CLAUSE_STORAGE_HCS 0
-#define MALLOB_CLAUSE_STORAGE_DCS 1
-#define MALLOB_CLAUSE_STORAGE_SCS 2
+#define MALLOB_CLAUSE_STORAGE_NONE -1
+#define MALLOB_CLAUSE_STORAGE_HCS   0
+#define MALLOB_CLAUSE_STORAGE_DCS   1
 
 class GenericClauseStorage {
 

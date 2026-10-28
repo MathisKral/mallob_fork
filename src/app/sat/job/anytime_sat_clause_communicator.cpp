@@ -2,17 +2,17 @@
 #include "anytime_sat_clause_communicator.hpp"
 
 #include <assert.h>
+#include <memory>
 #include <string.h>
-#include <algorithm>
 #include <cmath>
 #include <utility>
 
-#include "app/sat/data/clause_metadata.hpp"
+#include "app/sat/job/duplicated_clause_storage.hpp"
+#include "app/sat/job/generic_clause_storage.hpp"
 #include "app/sat/job/historic_clause_storage.hpp"
 #include "app/sat/job/inplace_sharing_aggregation.hpp"
 #include "app/sat/job/inter_job_clause_sharer.hpp"
 #include "app/sat/sharing/buffer/buffer_builder.hpp"
-#include "app/sat/sharing/buffer/buffer_reducer.hpp"
 #include "comm/job_tree_snapshot.hpp"
 #include "comm/msgtags.h"
 #include "data/app_configuration.hpp"
@@ -22,7 +22,6 @@
 #include "clause_sharing_session.hpp"
 #include "base_sat_job.hpp"
 #include "app/job_tree.hpp"
-#include "comm/mpi_base.hpp"
 #include "data/job_state.h"
 #include "util/option.hpp"
 #include "util/sys/timer.hpp"
@@ -45,16 +44,6 @@ void advanceCollective(BaseSatJob* job, JobMessage& msg, int broadcastTag) {
 
 AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& params, BaseSatJob* job, bool internalSharing) :
     _params(params), _job(job),
-    _cls_history(!params.collectClauseHistory() ? nullptr :
-        new HistoricClauseStorage([&]() {
-            AdaptiveClauseStore::Setup setup;
-            setup.maxEffectiveClauseLength = _params.strictClauseLengthLimit();
-            setup.maxLbdPartitionedSize = _params.maxLbdPartitioningSize();
-            setup.slotsForSumOfLengthAndLbd = _params.groupClausesByLengthLbdSum();
-            setup.numLiterals = _job->getBufferLimit(MyMpi::size(MPI_COMM_WORLD), false);
-            return setup;
-        }(), _job, params.clauseHistoryMaxSlots.val)
-    ),
     _cross_job_clause_sharer(_job->getDescription().getGroupId() > 0 && _job->getJobTree().isRoot() ?
         new InterJobClauseSharer(_params, job->getDescription().getGroupId(), job->getContextId(), job->toStr()) : nullptr),
     _sent_cert_unsat_ready_msg(!params.proofOutputFile.isSet() && !params.deterministicSolving()),
@@ -65,6 +54,27 @@ AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& par
         LOG(V2_INFO, "MAXSAT XXS #%i root rank received clauses (buflen=%i)\n", msg.jobId, msg.payload.size());
         _incoming_crossshared_clauses.push_back(std::move(msg.payload));
     }) {
+
+    // setup clause storage
+    switch (params.collectClauseHistory.val) {
+    case MALLOB_CLAUSE_STORAGE_NONE:
+        LOG(V2_INFO, "No clause storage set up in SAT clause communicator.");
+        break;
+    case MALLOB_CLAUSE_STORAGE_HCS:
+        _cls_history = std::unique_ptr<GenericClauseStorage>(new HistoricClauseStorage([&]() {
+            AdaptiveClauseStore::Setup setup;
+            setup.maxEffectiveClauseLength = _params.strictClauseLengthLimit();
+            setup.maxLbdPartitionedSize = _params.maxLbdPartitioningSize();
+            setup.slotsForSumOfLengthAndLbd = _params.groupClausesByLengthLbdSum();
+            setup.numLiterals = _job->getBufferLimit(MyMpi::size(MPI_COMM_WORLD), false);
+            return setup;
+        }(), _job, params.clauseHistoryMaxSlots.val));
+
+        break;
+    case MALLOB_CLAUSE_STORAGE_DCS:
+        _cls_history = std::unique_ptr<GenericClauseStorage>(new DuplicatedClauseStorage(params, job));
+        break;
+    }
 
     _time_of_last_epoch_initiation = Timer::elapsedSecondsCached();
     if (_cross_job_clause_sharer) initCrossSharer();
