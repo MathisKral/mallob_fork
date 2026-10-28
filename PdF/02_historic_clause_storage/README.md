@@ -1,7 +1,7 @@
 # Historic Clause Storage
 ## Setup
-- add parameters `collectClauseHistory` and `clauseHistoryNSlots`
-- ..
+- Parameters: `collectClauseHistory` and `clauseHistoryMaxSlots`
+- run benchmarks with `clauseHistoryMaxSlots=1` and `clauseHistoryMaxSlots=3`
 
 ## Benchmarks
-- same as for 01_prestudy
+- same as for 01_prestudy (without undisturb 100)
