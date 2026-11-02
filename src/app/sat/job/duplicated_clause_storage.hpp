@@ -8,6 +8,7 @@
 #include "app/sat/sharing/buffer/buffer_reader.hpp"
 #include "app/sat/sharing/filter/exact_clause_filter.hpp"
 #include "app/sat/sharing/filter/generic_clause_filter.hpp"
+#include "app/sat/sharing/store/adaptive_clause_store.hpp"
 #include "app/sat/sharing/store/generic_clause_store.hpp"
 #include "app/sat/sharing/store/static_clause_store.hpp"
 #include "comm/msgtags.h"
@@ -29,7 +30,7 @@ private:
     class Worker {
 
     private:
-        StaticClauseStore<false> _cdb; // verify this later but shouldn't be concurrent
+        AdaptiveClauseStore _cdb; // verify this later but shouldn't be concurrent
 
         std::unique_ptr<GenericClauseStore> _filter_store; // dummy for the filter
         std::unique_ptr<ExactClauseFilter> _filter;
@@ -42,9 +43,9 @@ private:
         int _num_open_tasks {0};
 
     public:
-        Worker(const Parameters& params) : _cdb(params, false, 265, true, INT32_MAX),
-            _filter_store(new StaticClauseStore<false>(params, false, 256, false, INT32_MAX)),
-            _filter(new ExactClauseFilter(*_filter_store, std::numeric_limits<int>::max(), 20)) { // hardcoded from clause_sharing_session for now
+        Worker(const AdaptiveClauseStore::Setup& setup) : _cdb(setup),
+            _filter_store(new AdaptiveClauseStore(setup)),
+            _filter(new ExactClauseFilter(*_filter_store, std::numeric_limits<int>::max(), setup.maxEffectiveClauseLength)) { 
             _bg_worker.run([this]() {runBackgroundWorker();});
         } 
 
@@ -127,7 +128,7 @@ private:
         }
 
 
-        std::pair<int, int> addClausesIntoDatabase(StaticClauseStore<false>& cdb, std::vector<int>& clauses, int epoch, bool is_import) {
+        std::pair<int, int> addClausesIntoDatabase(AdaptiveClauseStore& cdb, std::vector<int>& clauses, int epoch, bool is_import) {
             cdb.setClauseDeletionCallback([&](Mallob::Clause& cls) {
                 ProducedClauseCandidate pcc(cls.begin, cls.size, cls.lbd, 0, epoch);
                 _filter->erase(std::move(pcc));
@@ -167,8 +168,8 @@ private:
     int _last_shared_epoch {-1};
 
 public:
-    DuplicatedClauseStorage(const Parameters& params, BaseSatJob* job) :
-        _job(job), _worker(params) {
+    DuplicatedClauseStorage(const AdaptiveClauseStore::Setup& setup, BaseSatJob* job) :
+        _job(job), _worker(setup) {
             LOG(V4_VVER, "DCS initialized\n");
         }
 
