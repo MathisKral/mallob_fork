@@ -36,7 +36,7 @@ cmd="
 `# dont wait for subprocesses to finish` -terminate-abruptly=1 \
 `# sat config directory` -sat-config-dirs=config/sat/base/ \
 `# preprocessor configuration` -preprocess-config=config/satwithpre/actors_onechain.json \
-`# activate historic clause storage` -ch=0 \
+`# activate historic clause storage -1: deactivated; 0: HCS; 1: DCS` -ch=1 \
 `# set number of same size slots for historic clause storage (default=3)` -chs=1
 "
 
