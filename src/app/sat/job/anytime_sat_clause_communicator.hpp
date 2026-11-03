@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "app/sat/data/clause.hpp"
+#include "app/sat/job/duplicated_clause_storage.hpp"
 #include "app/sat/job/generic_clause_storage.hpp"
 #include "app/sat/job/inter_job_clause_sharer.hpp"
 #include "app/sat/sharing/store/generic_clause_store.hpp"
@@ -22,7 +23,7 @@
 #include "app/sat/job/historic_clause_storage.hpp"
 
 class BaseSatJob; // fwd decl
-class HistoricClauseStorage; // fwd decl
+class DuplicatedClauseStorage; // fwd decl
 
 class AnytimeSatClauseCommunicator {
 
@@ -31,7 +32,7 @@ private:
     BaseSatJob* _job = NULL;
     bool _suspended = false;
 
-    std::unique_ptr<HistoricClauseStorage> _cls_history;
+    std::unique_ptr<DuplicatedClauseStorage> _cls_history;
 
     std::unique_ptr<ClauseSharingSession> _current_session;
     std::list<std::unique_ptr<ClauseSharingSession>> _cancelled_sessions;

@@ -12,6 +12,7 @@
 #include "app/sat/job/historic_clause_storage.hpp"
 #include "app/sat/job/inplace_sharing_aggregation.hpp"
 #include "app/sat/job/inter_job_clause_sharer.hpp"
+#include "app/sat/proof/merging/distributed_proof_merger.hpp"
 #include "app/sat/sharing/buffer/buffer_builder.hpp"
 #include "comm/job_tree_snapshot.hpp"
 #include "comm/msgtags.h"
@@ -61,26 +62,27 @@ AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& par
         LOG(V2_INFO, "No clause storage set up in SAT clause communicator.");
         break;
     case MALLOB_CLAUSE_STORAGE_HCS:
-        _cls_history = std::unique_ptr<HistoricClauseStorage>(new HistoricClauseStorage([&]() {
-            AdaptiveClauseStore::Setup setup;
-            setup.maxEffectiveClauseLength = _params.strictClauseLengthLimit();
-            setup.maxLbdPartitionedSize = _params.maxLbdPartitioningSize();
-            setup.slotsForSumOfLengthAndLbd = _params.groupClausesByLengthLbdSum();
-            setup.numLiterals = _job->getBufferLimit(MyMpi::size(MPI_COMM_WORLD), false);
-            return setup;
-        }(), _job, params.clauseHistoryMaxSlots.val));
-
-        break;
-    case MALLOB_CLAUSE_STORAGE_DCS:
-        _cls_history = std::unique_ptr<HistoricClauseStorage>(nullptr);
-        //std::unique_ptr<DuplicatedClauseStorage>(new DuplicatedClauseStorage([&]() {
+        _cls_history = std::unique_ptr<DuplicatedClauseStorage>(nullptr);
+        //_cls_history = std::unique_ptr<HistoricClauseStorage>(new HistoricClauseStorage([&]() {
         //    AdaptiveClauseStore::Setup setup;
         //    setup.maxEffectiveClauseLength = _params.strictClauseLengthLimit();
         //    setup.maxLbdPartitionedSize = _params.maxLbdPartitioningSize();
         //    setup.slotsForSumOfLengthAndLbd = _params.groupClausesByLengthLbdSum();
         //    setup.numLiterals = _job->getBufferLimit(MyMpi::size(MPI_COMM_WORLD), false);
         //    return setup;
-        //}(), _job));
+        //}(), _job, params.clauseHistoryMaxSlots.val));
+
+        break;
+    case MALLOB_CLAUSE_STORAGE_DCS:
+        //_cls_history = std::unique_ptr<HistoricClauseStorage>(nullptr);
+        _cls_history = std::unique_ptr<DuplicatedClauseStorage>(new DuplicatedClauseStorage([&]() {
+            AdaptiveClauseStore::Setup setup;
+            setup.maxEffectiveClauseLength = _params.strictClauseLengthLimit();
+            setup.maxLbdPartitionedSize = _params.maxLbdPartitioningSize();
+            setup.slotsForSumOfLengthAndLbd = _params.groupClausesByLengthLbdSum();
+            setup.numLiterals = _job->getBufferLimit(MyMpi::size(MPI_COMM_WORLD), false);
+            return setup;
+        }(), _job));
         break;
     }
 

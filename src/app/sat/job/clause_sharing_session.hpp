@@ -3,6 +3,7 @@
 
 #include "app/sat/data/clause_metadata.hpp"
 #include "app/sat/job/clause_sharing_actor.hpp"
+#include "app/sat/job/duplicated_clause_storage.hpp"
 #include "app/sat/job/generic_clause_storage.hpp"
 #include "app/sat/sharing/buffer/buffer_reader.hpp"
 #include "app/sat/sharing/filter/clause_buffer_lbd_scrambler.hpp"
@@ -25,7 +26,7 @@ class ClauseSharingSession {
 private:
     const Parameters& _params;
     ClauseSharingActor* _job;
-    HistoricClauseStorage* _cls_history;
+    DuplicatedClauseStorage* _cls_history;
     int _epoch;
     enum Stage {
         PRODUCING_CLAUSES,
@@ -56,7 +57,7 @@ private:
 
 public:
     ClauseSharingSession(const Parameters& params, ClauseSharingActor* actor, const JobTreeSnapshot& snapshot,
-            HistoricClauseStorage* clsHistory, int epoch, float compensationFactor) : 
+            DuplicatedClauseStorage* clsHistory, int epoch, float compensationFactor) : 
         _params(params), _job(actor), _cls_history(clsHistory), _epoch(epoch),
         _allreduce_clauses(
             snapshot,
