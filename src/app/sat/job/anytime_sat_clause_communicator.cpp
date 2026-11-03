@@ -61,7 +61,7 @@ AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& par
         LOG(V2_INFO, "No clause storage set up in SAT clause communicator.");
         break;
     case MALLOB_CLAUSE_STORAGE_HCS:
-        _cls_history = std::unique_ptr<GenericClauseStorage>(new HistoricClauseStorage([&]() {
+        _cls_history = std::unique_ptr<HistoricClauseStorage>(new HistoricClauseStorage([&]() {
             AdaptiveClauseStore::Setup setup;
             setup.maxEffectiveClauseLength = _params.strictClauseLengthLimit();
             setup.maxLbdPartitionedSize = _params.maxLbdPartitioningSize();
@@ -72,7 +72,7 @@ AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& par
 
         break;
     case MALLOB_CLAUSE_STORAGE_DCS:
-        _cls_history = std::unique_ptr<GenericClauseStorage>(new DuplicatedClauseStorage([&]() {
+        _cls_history = std::unique_ptr<DuplicatedClauseStorage>(new DuplicatedClauseStorage([&]() {
             AdaptiveClauseStore::Setup setup;
             setup.maxEffectiveClauseLength = _params.strictClauseLengthLimit();
             setup.maxLbdPartitionedSize = _params.maxLbdPartitioningSize();

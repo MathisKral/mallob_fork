@@ -37,6 +37,28 @@ bool areIntervalsOverlapping(int begin1, int end1, int begin2, int end2);
 class HistoricClauseStorage : public GenericClauseStorage{
 
 private:
+    struct StorageDiagnostics {
+        int numLitsInStorage;
+        int numClausesInStorage;
+        std::string slotLayout;
+    };
+
+    struct BackgroundTask {
+        enum Type {INSERT, INSERT_AND_IMPORT, REQUEST} type;
+        int epochBegin;
+        int epochEnd;
+        bool fromLeftChild {false};
+        std::vector<int> clauses;
+        bool finished {false};
+        StorageDiagnostics storageDiagnostics;
+
+        BackgroundTask(Type type, int epochBegin, int epochEnd, const std::vector<int>& clauses, bool fromLeftChild) : 
+            type(type), epochBegin(epochBegin), epochEnd(epochEnd), 
+            fromLeftChild(fromLeftChild), clauses(clauses) {}
+        BackgroundTask(Type type, int epochBegin, int epochEnd, std::vector<int>&& clauses, bool fromLeftChild) : 
+            type(type), epochBegin(epochBegin), epochEnd(epochEnd), 
+            fromLeftChild(fromLeftChild), clauses(std::move(clauses)) {}
+    };
 
     class Worker {
     
