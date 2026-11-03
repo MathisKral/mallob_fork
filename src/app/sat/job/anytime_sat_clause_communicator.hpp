@@ -22,7 +22,7 @@
 #include "app/sat/job/historic_clause_storage.hpp"
 
 class BaseSatJob; // fwd decl
-class GenericClauseStorage; // fwd decl
+class HistoricClauseStorage; // fwd decl
 
 class AnytimeSatClauseCommunicator {
 
@@ -31,7 +31,7 @@ private:
     BaseSatJob* _job = NULL;
     bool _suspended = false;
 
-    std::unique_ptr<GenericClauseStorage> _cls_history;
+    std::unique_ptr<HistoricClauseStorage> _cls_history;
 
     std::unique_ptr<ClauseSharingSession> _current_session;
     std::list<std::unique_ptr<ClauseSharingSession>> _cancelled_sessions;

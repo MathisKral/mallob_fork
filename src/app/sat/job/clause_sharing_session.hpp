@@ -25,7 +25,7 @@ class ClauseSharingSession {
 private:
     const Parameters& _params;
     ClauseSharingActor* _job;
-    GenericClauseStorage* _cls_history;
+    HistoricClauseStorage* _cls_history;
     int _epoch;
     enum Stage {
         PRODUCING_CLAUSES,
@@ -56,7 +56,7 @@ private:
 
 public:
     ClauseSharingSession(const Parameters& params, ClauseSharingActor* actor, const JobTreeSnapshot& snapshot,
-            GenericClauseStorage* clsHistory, int epoch, float compensationFactor) : 
+            HistoricClauseStorage* clsHistory, int epoch, float compensationFactor) : 
         _params(params), _job(actor), _cls_history(clsHistory), _epoch(epoch),
         _allreduce_clauses(
             snapshot,
