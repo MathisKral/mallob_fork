@@ -53,7 +53,7 @@ private:
     class Worker {
 
     private:
-        AdaptiveClauseStore _cdb; // verify this later but shouldn't be concurrent
+        StaticClauseStore<true> _cdb; // verify this later but shouldn't be concurrent
 
         std::unique_ptr<GenericClauseStore> _filter_store; // dummy for the filter
         std::unique_ptr<ExactClauseFilter> _filter;
@@ -66,9 +66,11 @@ private:
         int _num_open_tasks {0};
 
     public:
-        Worker(const AdaptiveClauseStore::Setup& setup) : _cdb(setup),
-            _filter_store(new AdaptiveClauseStore(setup)),
-            _filter(new ExactClauseFilter(*_filter_store, std::numeric_limits<int>::max(), setup.maxEffectiveClauseLength)) { 
+
+        // TODO: verify this configuration!!!
+        Worker(const Parameters& params) : _cdb(params, false, 256, true, INT32_MAX),
+            _filter_store(new StaticClauseStore<true>(params, false, 256, true, INT32_MAX)),
+            _filter(new ExactClauseFilter(*_filter_store, std::numeric_limits<int>::max(), INT32_MAX)) { 
             _bg_worker.run([this]() {runBackgroundWorker();});
         } 
 
@@ -151,7 +153,7 @@ private:
         }
 
 
-        std::pair<int, int> addClausesIntoDatabase(AdaptiveClauseStore& cdb, std::vector<int>& clauses, int epoch, bool is_import) {
+        std::pair<int, int> addClausesIntoDatabase(StaticClauseStore<true>& cdb, std::vector<int>& clauses, int epoch, bool is_import) {
             cdb.setClauseDeletionCallback([&](Mallob::Clause& cls) {
                 ProducedClauseCandidate pcc(cls.begin, cls.size, cls.lbd, 0, epoch);
                 _filter->erase(std::move(pcc));
@@ -191,8 +193,8 @@ private:
     int _last_shared_epoch {-1};
 
 public:
-    DuplicatedClauseStorage(const AdaptiveClauseStore::Setup& setup, BaseSatJob* job) :
-        _job(job), _worker(setup) {
+    DuplicatedClauseStorage(const Parameters& params, BaseSatJob* job) :
+        _job(job), _worker(params) {
             LOG(V4_VVER, "DCS initialized\n");
         }
 
