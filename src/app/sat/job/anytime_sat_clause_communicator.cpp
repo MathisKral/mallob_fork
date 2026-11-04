@@ -9,10 +9,8 @@
 
 #include "app/sat/job/duplicated_clause_storage.hpp"
 #include "app/sat/job/generic_clause_storage.hpp"
-#include "app/sat/job/historic_clause_storage.hpp"
 #include "app/sat/job/inplace_sharing_aggregation.hpp"
 #include "app/sat/job/inter_job_clause_sharer.hpp"
-#include "app/sat/proof/merging/distributed_proof_merger.hpp"
 #include "app/sat/sharing/buffer/buffer_builder.hpp"
 #include "comm/job_tree_snapshot.hpp"
 #include "comm/msgtags.h"
@@ -57,6 +55,7 @@ AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& par
     }) {
 
     // setup clause storage
+    // TODO: Fix this with polymorphy if possible
     switch (params.collectClauseHistory.val) {
     case MALLOB_CLAUSE_STORAGE_NONE:
         LOG(V2_INFO, "No clause storage set up in SAT clause communicator.");

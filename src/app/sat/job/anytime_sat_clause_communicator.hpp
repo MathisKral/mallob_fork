@@ -2,22 +2,15 @@
 #pragma once
 
 #include <stddef.h>
-#include <future>
 #include <memory>
 #include <list>
 #include <vector>
 
-#include "app/sat/data/clause.hpp"
 #include "app/sat/job/duplicated_clause_storage.hpp"
-#include "app/sat/job/generic_clause_storage.hpp"
 #include "app/sat/job/inter_job_clause_sharer.hpp"
-#include "app/sat/sharing/store/generic_clause_store.hpp"
 #include "comm/msg_queue/message_subscription.hpp"
 #include "util/params.hpp"
-#include "util/hashing.hpp"
 #include "data/job_transfer.hpp"
-#include "app/job.hpp"
-#include "comm/job_tree_basic_all_reduction.hpp"
 #include "clause_sharing_session.hpp"
 #include "app/sat/proof/proof_producer.hpp"
 #include "app/sat/job/historic_clause_storage.hpp"
