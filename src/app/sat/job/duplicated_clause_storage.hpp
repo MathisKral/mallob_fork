@@ -55,7 +55,7 @@ private:
     private:
         StaticClauseStore<true> _cdb; // verify this later but shouldn't be concurrent
 
-        std::unique_ptr<GenericClauseStore> _filter_store; // dummy for the filter, can be anything, maybe even nullptr
+        std::unique_ptr<GenericClauseStore> _filter_store; // dummy for the filter, can be anything
         std::unique_ptr<ExactClauseFilter> _filter;
 
         ConditionVariable _cond_var_bg_tasks;
@@ -68,8 +68,8 @@ private:
     public:
 
         // TODO: verify this configuration!!!
-        Worker(const Parameters& params) : _cdb(params, false, 256, true, INT32_MAX),
-            _filter_store(new StaticClauseStore<true>(params, false, 256, true, INT32_MAX)),
+        Worker(const Parameters& params, int max_lits) : _cdb(params, false, 256, true, max_lits),
+            _filter_store(new StaticClauseStore<false>(params, false, 256, true, max_lits)),
             _filter(new ExactClauseFilter(*_filter_store, std::numeric_limits<int>::max(), INT32_MAX)) { 
             _bg_worker.run([this]() {runBackgroundWorker();});
         } 
@@ -193,8 +193,8 @@ private:
     int _last_shared_epoch {-1};
 
 public:
-    DuplicatedClauseStorage(const Parameters& params, BaseSatJob* job) :
-        _job(job), _worker(params) {
+    DuplicatedClauseStorage(const Parameters& params, BaseSatJob* job, int max_lits) :
+        _job(job), _worker(params, max_lits) {
             LOG(V4_VVER, "DCS initialized\n");
         }
 

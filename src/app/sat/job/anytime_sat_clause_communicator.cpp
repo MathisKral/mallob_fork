@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <memory>
+#include <mpi.h>
 #include <string.h>
 #include <cmath>
 #include <utility>
@@ -74,7 +75,7 @@ AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& par
         break;
     case MALLOB_CLAUSE_STORAGE_DCS:
         //_cls_history = std::unique_ptr<HistoricClauseStorage>(nullptr);
-        _cls_history = std::unique_ptr<DuplicatedClauseStorage>(new DuplicatedClauseStorage(params, _job));
+        _cls_history = std::unique_ptr<DuplicatedClauseStorage>(new DuplicatedClauseStorage(params, _job, _job->getBufferLimit(MyMpi::size(MPI_COMM_WORLD), false)));
         break;
     }
 
