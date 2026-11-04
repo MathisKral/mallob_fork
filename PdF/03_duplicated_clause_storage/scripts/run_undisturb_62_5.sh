@@ -1,20 +1,26 @@
 #!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=120
+#SBATCH --ntasks-per-core=2  # use hyperthreading
+#SBATCH -J mallob-disturbance-62_5
+
+# ATTENTION: this benchmark should be performed on partition "diffie" or "hellman"
 
 # configuration
 bench_dir="./PdF/01_prestudy"
-results_dir="./PdF/03_duplicated_clause_storage/results/results_test_disturb_50_100"
+results_dir="./PdF/03_duplicated_clause_storage/results/${SLURM_JOB_ID}_results_undisturb_62_5"
 nbenchmarks="$(cat ${bench_dir}/templates/benchmarks.txt.0 | wc -l)"
 job_time_limit=300
-#time_limit=$(($nbenchmarks * ($job_time_limit - 100))) # assume a job takes an average time of 200s
-time_limit=600
-nprocs=4
-nthreads=2 # nprocs * nthreads = total cpus on one node
+time_limit=$(($nbenchmarks * ($job_time_limit - 100))) # assume a job takes an average time of 200s
+nprocs=15
+nthreads=4 # nprocs * nthreads = total cpus on one node
 
 
 # command
 cmd="
-`# run mallob with 2 client (disturbed)` build/mallob -c=2 \
-`# templates for the 1/2 client(s)` -client-template=${bench_dir}/templates/client-template-disturbed-50-100.json \
+`# run mallob with 1 client (undisturbed)` build/mallob -c=1 \
+`# templates for the 1/2 client(s)` -client-template=${bench_dir}/templates/client-template-undisturbed.json \
 `# job templates` -job-template=${bench_dir}/templates/job-template.json \
 `# job descriptions` -job-desc-template=${bench_dir}/templates/benchmarks.txt \
 `# active jobs per client` -ajpc=1 \
@@ -25,12 +31,11 @@ cmd="
 `# portfolio (k_ when satwithpre)` -satsolver=k_
 `# output file` -sro=${results_dir}/results.json \
 `# log dir` -log=${results_dir} \
-`# verbosity` -v=4 \
+`# verbosity` -v=2 \
 `# dont wait for subprocesses to finish` -terminate-abruptly=1 \
 `# sat config directory` -sat-config-dirs=config/sat/base/ \
 `# preprocessor configuration` -preprocess-config=config/satwithpre/actors_onechain.json \
-`# activate historic clause storage` -ch=0 \
-`# set number of same size slots for historic clause storage (default=3)` -chs=1
+`# select clause history -1: NONE; 0: HCS; 1: DCS` -ch=1 \
 "
 
 # log

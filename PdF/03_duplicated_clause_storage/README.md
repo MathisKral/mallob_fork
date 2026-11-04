@@ -1,0 +1,4 @@
+- test distributed clause storage implementation
+- based on HCS but with only one "slot"
+- compare adaptive clause storage vs. static clause storage
+- same benchmarks as `01_prestudy`
