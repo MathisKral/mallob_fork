@@ -1,6 +1,7 @@
 #pragma once // ifndef ??
 
 #include "app/sat/data/clause.hpp"
+#include "app/sat/data/clause_metadata.hpp"
 #include "app/sat/data/produced_clause_candidate.hpp"
 #include "app/sat/job/base_sat_job.hpp"
 #include "app/sat/job/generic_clause_storage.hpp"
@@ -70,7 +71,7 @@ private:
         // TODO: verify this configuration!!!
         Worker(const Parameters& params, int max_lits) : _cdb(params, false, 256, true, max_lits),
             _filter_store(new StaticClauseStore<false>(params, false, 256, true, max_lits)),
-            _filter(new ExactClauseFilter(*_filter_store, std::numeric_limits<int>::max(), INT32_MAX)) { 
+            _filter(new ExactClauseFilter(*_filter_store, std::numeric_limits<int>::max(), params.strictClauseLengthLimit() + ClauseMetadata::numInts())) {  // from inter_job_clause_sharer
             _bg_worker.run([this]() {runBackgroundWorker();});
         } 
 
