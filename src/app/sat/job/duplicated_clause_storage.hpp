@@ -55,7 +55,7 @@ private:
     private:
         StaticClauseStore<true> _cdb; // verify this later but shouldn't be concurrent
 
-        std::unique_ptr<GenericClauseStore> _filter_store; // dummy for the filter
+        std::unique_ptr<GenericClauseStore> _filter_store; // dummy for the filter, can be anything, maybe even nullptr
         std::unique_ptr<ExactClauseFilter> _filter;
 
         ConditionVariable _cond_var_bg_tasks;

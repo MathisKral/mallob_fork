@@ -74,14 +74,7 @@ AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& par
         break;
     case MALLOB_CLAUSE_STORAGE_DCS:
         //_cls_history = std::unique_ptr<HistoricClauseStorage>(nullptr);
-        _cls_history = std::unique_ptr<DuplicatedClauseStorage>(new DuplicatedClauseStorage([&]() {
-            AdaptiveClauseStore::Setup setup;
-            setup.maxEffectiveClauseLength = _params.strictClauseLengthLimit();
-            setup.maxLbdPartitionedSize = _params.maxLbdPartitioningSize();
-            setup.slotsForSumOfLengthAndLbd = _params.groupClausesByLengthLbdSum();
-            setup.numLiterals = _job->getBufferLimit(MyMpi::size(MPI_COMM_WORLD), false);
-            return setup;
-        }(), _job));
+        _cls_history = std::unique_ptr<DuplicatedClauseStorage>(new DuplicatedClauseStorage(params, _job));
         break;
     }
 
