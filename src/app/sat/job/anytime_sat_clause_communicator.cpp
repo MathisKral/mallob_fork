@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "app/sat/data/clause_metadata.hpp"
+#include "app/sat/job/distributed_clause_storage.hpp"
 #include "app/sat/job/historic_clause_storage.hpp"
 #include "app/sat/job/inplace_sharing_aggregation.hpp"
 #include "app/sat/job/inter_job_clause_sharer.hpp"
@@ -46,14 +47,7 @@ void advanceCollective(BaseSatJob* job, JobMessage& msg, int broadcastTag) {
 AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& params, BaseSatJob* job, bool internalSharing) :
     _params(params), _job(job),
     _cls_history(!params.collectClauseHistory() ? nullptr :
-        new HistoricClauseStorage([&]() {
-            AdaptiveClauseStore::Setup setup;
-            setup.maxEffectiveClauseLength = _params.strictClauseLengthLimit();
-            setup.maxLbdPartitionedSize = _params.maxLbdPartitioningSize();
-            setup.slotsForSumOfLengthAndLbd = _params.groupClausesByLengthLbdSum();
-            setup.numLiterals = _job->getBufferLimit(MyMpi::size(MPI_COMM_WORLD), false);
-            return setup;
-        }(), _job)
+        new DistributedClauseStorage(job)
     ),
     _cross_job_clause_sharer(_job->getDescription().getGroupId() > 0 && _job->getJobTree().isRoot() ?
         new InterJobClauseSharer(_params, job->getDescription().getGroupId(), job->getContextId(), job->toStr()) : nullptr),
@@ -215,8 +209,7 @@ bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mp
     if (msg.tag == MSG_REQUEST_HISTORIC_CLAUSES) {
         int epochBegin = msg.payload[0];
         int epochEnd = msg.payload[1];
-        _cls_history->handleRequestMissingInterval(source == _job->getJobTree().getLeftChildNodeRank(), 
-            epochBegin, epochEnd);
+        _cls_history->handleRequestMissingInterval(epochBegin, epochEnd);
         return true;
     }
     return false;
