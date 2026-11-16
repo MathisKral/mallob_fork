@@ -60,7 +60,7 @@ void Client::readIncomingJobs() {
         });
         if (!_instance_reader.continueRunning()) break;
         if (_num_loaded_jobs >= _params.loadedJobsPerClient()) continue;
-        LOGGER(log, V4_VVER, "done waiting inc=%i loaded=%i\n", _num_incoming_jobs.load(), _num_loaded_jobs.load());
+        //LOGGER(log, V4_VVER, "done waiting inc=%i loaded=%i\n", _num_incoming_jobs.load(), _num_loaded_jobs.load());
 
         // Obtain lock, measure time
         auto lock = _incoming_job_lock.getLock();

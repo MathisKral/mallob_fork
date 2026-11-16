@@ -3,7 +3,7 @@
 
 # configuration
 bench_dir="./PdF/01_prestudy"
-results_dir="./PdF/03_duplicated_clause_storage/results/${SLURM_JOB_ID}_results_disturb_50_100"
+results_dir="./PdF/04_distributed_clause_storage/results/_results_disturb_50_100"
 nbenchmarks="$(cat ${bench_dir}/templates/benchmarks.txt.0 | wc -l)"
 job_time_limit=300
 time_limit=$(($nbenchmarks * ($job_time_limit - 100))) # assume a job takes an average time of 200s
