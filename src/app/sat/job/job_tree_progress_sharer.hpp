@@ -140,7 +140,7 @@ public:
     // initialize for a new epoch
     void initialize(int epoch, const JobTreeSnapshot& treeSnapshot) {
         if (_stage != DONE) {
-            LOG(V1_WARN, "DCS ProgressSharer initialized but not finished!\n");
+            LOG(V1_WARN, "[WARN] DCS ProgressSharer initialized but not finished!\n");
         }
 
         _epoch = epoch;
@@ -159,7 +159,9 @@ public:
 
     void addOwnRequest(Request request) {
         if (_stage != REQUEST_AGGREGATION) {
-            LOG(V1_WARN, "DCS request aggregation tried to add request but was in wrong stage!\n");
+            LOG(V1_WARN, "[WARN] DCS request aggregation tried to add request but was in wrong stage!\n");
+        } else {
+            LOG(V4_VVER, "DCS adding own workers request\n");
         }
 
         _current_request.merge(request);
@@ -168,26 +170,26 @@ public:
 
     void addChildRequest(Request request, int senderId) {
         if (_stage != REQUEST_AGGREGATION) {
-            LOG(V1_WARN, "DCS request aggregation tried to add request but was in wrong stage!\n");
+            LOG(V1_WARN, "[WARN] DCS request aggregation tried to add request but was in wrong stage!\n");
         }
 
         // check senderId
         if (senderId == _treeSnapshot.leftChildIndex) {
             if (_received_child_elems.first) {
-                LOG(V1_WARN, "DCS request aggregation tried to add child element that is already existent!\n");
+                LOG(V1_WARN, "[WARN] DCS request aggregation tried to add child element that is already existent!\n");
             } else {
                 _current_request.merge(request);
                 _received_child_elems.first = true;
             }
         } else if (senderId == _treeSnapshot.rightChildIndex) {
             if (_received_child_elems.second) {
-                LOG(V1_WARN, "DCS request aggregation tried to add child element that is already existent!\n");
+                LOG(V1_WARN, "[WARN] DCS request aggregation tried to add child element that is already existent!\n");
             } else {
                 _current_request.merge(request);
                 _received_child_elems.second = true;
             }
         } else {
-            LOG(V1_WARN, "DCS request aggregation got request from wrong worker id!\n");
+            LOG(V1_WARN, "[WARN] DCS request aggregation got request from wrong worker id!\n");
         }
     }
 
