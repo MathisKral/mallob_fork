@@ -200,16 +200,35 @@ bool AnytimeSatClauseCommunicator::handle(int source, int mpiTag, JobMessage& ms
 }
 
 bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mpiTag, JobMessage& msg) {
-    if (msg.tag == MSG_FORWARD_HISTORIC_CLAUSES) {
-        int epochEnd = msg.payload.back();
-        msg.payload.pop_back();
-        _cls_history->handleIncomingMissingInterval(msg.epoch, epochEnd, std::move(msg.payload));
+    // aggregate request message
+    if (msg.tag == MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE) {
+        /*
+        TODO
+        */
         return true;
     }
-    if (msg.tag == MSG_REQUEST_HISTORIC_CLAUSES) {
-        int epochBegin = msg.payload[0];
-        int epochEnd = msg.payload[1];
-        _cls_history->handleRequestMissingInterval(epochBegin, epochEnd);
+
+    // broadcast request message
+    if (msg.tag == MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST) {
+        /*
+        TODO
+        */
+        return true;
+    }
+
+    // aggregate response
+    if (msg.tag == MSG_FORWARD_HISTORIC_CLAUSES_AGGREGATE) {
+        /*
+        TODO
+        */
+        return true;
+    }
+
+    // broadcast response
+    if (msg.tag == MSG_FORWARD_HISTORIC_CLAUSES_BROADCAST) {
+        /*
+        TODO
+        */
         return true;
     }
     return false;
