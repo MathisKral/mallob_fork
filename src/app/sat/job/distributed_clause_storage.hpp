@@ -176,7 +176,7 @@ public:
         }
 
         // insert new set of clauses received from clause sharing
-        LOG(V4_VVER, "DCS insert [%i,%i) buflen=...", epoch, epoch+1);
+        LOG(V4_VVER, "DCS insert [%i,%i) buflen=...\n", epoch, epoch+1);
         // TODO: worker.addTask...
         _last_epoch = epoch;
 
@@ -210,7 +210,7 @@ public:
 
     // process all finished tasks from the worker
     void handleFinishedTasks() {
-        LOG(V4_VVER, "DCS handle finished worker tasks\n");
+        //LOG(V4_VVER, "DCS handle finished worker tasks\n");
         //TODO: worker.addTask...
     }
 

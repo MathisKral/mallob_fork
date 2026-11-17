@@ -384,7 +384,8 @@ void AnytimeSatClauseCommunicator::initiateClauseSharing(JobMessage& msg, int so
     );
 
     // reset progress sharer right after clause sharing session is resettet
-    _cls_history->resetProgressSharer(_current_epoch);
+    if (_cls_history)
+        _cls_history->resetProgressSharer(_current_epoch);
 
     // register listener to grab final, filtered shared clauses and share them with other jobs
     _current_session->setAdditionalClauseListener(
