@@ -28,12 +28,13 @@ private:
     class Worker {
 
     private:
+        int max_same_breadth_slots;
         // slot structure containing the clauses for one epoch interval
         // [i, j)
         struct Slot {
             int epochBegin;
             int epochEnd;
-            Slot(int epochBegin, int epochEnd) : 
+            Slot(int epochBegin, int epochEnd, int max_same_breadth_slots) : 
                 epochBegin(epochBegin), epochEnd(epochEnd) {}
         };
 
@@ -46,7 +47,8 @@ private:
         int _num_open_tasks {0};
 
     public:
-        Worker() {
+        Worker(int max_same_breadth_slots) :
+            max_same_breadth_slots(max_same_breadth_slots) {
             _bg_worker.run([this]() {runBackgroundWorker();});
         }
 
@@ -136,23 +138,26 @@ private:
 
 // actual fields
 private:
+const int _max_same_breadth_slots {1};
+
 BaseSatJob *_job;
 Worker _worker;
 std::unique_ptr<JobTreeProgressSharer> _sharer;
 
-const int _max_same_breadth_slots {1};
 int _last_epoch {0};
 std::vector<std::pair<int, int>> _missing_epoch_intervals;
 
 public:
-    DistributedClauseStorage(BaseSatJob* job) : 
-        _job(job), _worker() {
+    DistributedClauseStorage(BaseSatJob* job, int max_same_breadth_slots) : 
+         _max_same_breadth_slots(max_same_breadth_slots), _job(job), _worker(_max_same_breadth_slots) {
             LOG(V4_VVER, "DCS Setup Distributed Clause Storage\n");
-            _sharer.reset(new JobTreeProgressSharer(
-                _job->getIndex(),
-                _job->getJobTree().getSnapshot()
-            ));
+            _sharer.reset(new JobTreeProgressSharer(_job));
         }
+
+    // reset progress sharer to current clause sharing epoch
+    void resetProgressSharer(int epoch) {
+        _sharer->initialize(epoch, _job->getJobTree().getSnapshot());
+    }
 
 
     // import clauses from clause sharing
@@ -175,21 +180,20 @@ public:
         // TODO: worker.addTask...
         _last_epoch = epoch;
 
-        // reset progress sharer
-        _sharer->initialize(epoch, _job->getJobTree().getSnapshot());
-
         // finally request progress if missing
         requestMissingInterval();
     }
 
     // handle the request for a interval
-    void handleIntervalRequestAggregation(/*TODO*/) {
-        LOG(V4_VVER, "DCS received request aggregation for interval [...,...)\n");
-        // TODO: worker.addTask...
+    void handleIntervalRequestAggregation(int epoch, int senderId, JobTreeProgressSharer::Request request) {
+        LOG(V4_VVER, "DCS received request aggregation for epoch %i from worker %i\n", epoch, senderId);
+        
+        // add request to progress sharer
+        _sharer->addChildRequest(request, senderId);
     }
 
-    void handleIntervalRequestBroadcast(/*TODO*/) {
-        LOG(V4_VVER, "DCS received request broadcast for interval [...,...)\n");
+    void handleIntervalRequestBroadcast(int epoch) {
+        LOG(V4_VVER, "DCS received request broadcast for epoch %i\n", epoch);
         // TODO: worker.addTask...
     }
 
@@ -274,8 +278,26 @@ private:
 
     void requestMissingInterval() {
         LOG(V4_VVER, "DCS sending interval request\n");
-        /*
-        take missing interval and request progress
-        */
+
+
+        // request a missing interval
+        if (!_missing_epoch_intervals.empty()) {
+            auto [intervBegin, intervEnd] = _missing_epoch_intervals.front();
+            LOG(V4_VVER, "DCS requesting [%i, %i) in epoch %i\n", intervBegin, intervEnd, _last_epoch);
+            
+            // add missing interval to request and advance request
+            JobTreeProgressSharer::Request req;
+            req.addInterval(std::pair<int, int>(intervBegin, intervEnd), _job->getJobTree().getIndex());
+            _sharer->addOwnRequest(req);
+            _sharer->advance();
+
+        // no interval to request, send empty message for aggregation
+        } else {
+            
+            // add default request and advance
+            JobTreeProgressSharer::Request req;
+            _sharer->addOwnRequest(req);
+            _sharer->advance();
+        }
     }
 };

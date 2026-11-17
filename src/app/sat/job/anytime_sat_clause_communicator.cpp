@@ -12,6 +12,7 @@
 #include "app/sat/job/historic_clause_storage.hpp"
 #include "app/sat/job/inplace_sharing_aggregation.hpp"
 #include "app/sat/job/inter_job_clause_sharer.hpp"
+#include "app/sat/job/job_tree_progress_sharer.hpp"
 #include "app/sat/sharing/buffer/buffer_builder.hpp"
 #include "app/sat/sharing/buffer/buffer_reducer.hpp"
 #include "comm/job_tree_snapshot.hpp"
@@ -47,7 +48,7 @@ void advanceCollective(BaseSatJob* job, JobMessage& msg, int broadcastTag) {
 AnytimeSatClauseCommunicator::AnytimeSatClauseCommunicator(const Parameters& params, BaseSatJob* job, bool internalSharing) :
     _params(params), _job(job),
     _cls_history(!params.collectClauseHistory() ? nullptr :
-        new DistributedClauseStorage(job)
+        new DistributedClauseStorage(job, 1)
     ),
     _cross_job_clause_sharer(_job->getDescription().getGroupId() > 0 && _job->getJobTree().isRoot() ?
         new InterJobClauseSharer(_params, job->getDescription().getGroupId(), job->getContextId(), job->toStr()) : nullptr),
@@ -202,9 +203,13 @@ bool AnytimeSatClauseCommunicator::handle(int source, int mpiTag, JobMessage& ms
 bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mpiTag, JobMessage& msg) {
     // aggregate request message
     if (msg.tag == MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE) {
-        /*
-        TODO
-        */
+
+        // decode request aggregation message and forward to progress sharer
+        _cls_history->handleIntervalRequestAggregation(
+            msg.epoch,
+            msg.treeIndexOfSender,
+            JobTreeProgressSharer::Request::decode(msg.payload)
+        );
         return true;
     }
 
@@ -213,6 +218,7 @@ bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mp
         /*
         TODO
         */
+        _cls_history->handleIntervalRequestBroadcast(msg.epoch);
         return true;
     }
 
@@ -221,6 +227,7 @@ bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mp
         /*
         TODO
         */
+        _cls_history->handleIntervalResponseAggregation();
         return true;
     }
 
@@ -229,6 +236,7 @@ bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mp
         /*
         TODO
         */
+        _cls_history->handleIntervalResponseBroadcast();
         return true;
     }
     return false;
@@ -374,6 +382,9 @@ void AnytimeSatClauseCommunicator::initiateClauseSharing(JobMessage& msg, int so
     _current_session.reset(
         new ClauseSharingSession(_params, _job, snapshot, _cls_history.get(), _current_epoch, compensationFactor)
     );
+
+    // reset progress sharer right after clause sharing session is resettet
+    _cls_history->resetProgressSharer(_current_epoch);
 
     // register listener to grab final, filtered shared clauses and share them with other jobs
     _current_session->setAdditionalClauseListener(
