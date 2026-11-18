@@ -156,6 +156,7 @@ public:
 
     // reset progress sharer to current clause sharing epoch
     void resetProgressSharer(int epoch) {
+	LOG(V4_VVER, "DCS reset progress sharer at epoch %i\n", epoch);
         _sharer->initialize(epoch, _job->getJobTree().getSnapshot());
     }
 

@@ -143,12 +143,14 @@ public:
             LOG(V1_WARN, "[WARN] DCS ProgressSharer initialized but not finished!\n");
         }
 
+	LOG(V4_VVER, "DCS progress sharer %i, %i \n", _treeSnapshot.leftChildIndex, _treeSnapshot.rightChildIndex);
+
         _epoch = epoch;
         _treeSnapshot = treeSnapshot;
 
         _received_child_elems = std::pair<bool, bool>(
-            _treeSnapshot.leftChildIndex != -1,
-            _treeSnapshot.rightChildIndex != -1
+            _treeSnapshot.leftChildIndex == -1,
+            _treeSnapshot.rightChildIndex == -1
         );
         _received_own_elems = false;
         _current_request = Request();
@@ -178,6 +180,7 @@ public:
             if (_received_child_elems.first) {
                 LOG(V1_WARN, "[WARN] DCS request aggregation tried to add child element that is already existent!\n");
             } else {
+		LOG(V4_VVER, "DCS progress aggregation received request from worker %i\n", senderId);
                 _current_request.merge(request);
                 _received_child_elems.first = true;
             }
@@ -185,6 +188,7 @@ public:
             if (_received_child_elems.second) {
                 LOG(V1_WARN, "[WARN] DCS request aggregation tried to add child element that is already existent!\n");
             } else {
+		LOG(V4_VVER, "DCS progress aggregation received request from worker %i\n", senderId);
                 _current_request.merge(request);
                 _received_child_elems.second = true;
             }
