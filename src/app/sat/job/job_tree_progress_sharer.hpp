@@ -138,15 +138,17 @@ public:
     }
 
     // initialize for a new epoch
-    void initialize(int epoch, const JobTreeSnapshot& treeSnapshot) {
+    void initialize(int epoch) {
         if (_stage != DONE) {
             LOG(V1_WARN, "[WARN] DCS ProgressSharer initialized but not finished!\n");
         }
 
-	LOG(V4_VVER, "DCS progress sharer %i, %i \n", _treeSnapshot.leftChildIndex, _treeSnapshot.rightChildIndex);
+        // get job tree snapshot
+        _treeSnapshot = _job->getJobTree().getSnapshot();
+
+	    LOG(V4_VVER, "DCS progress sharer %i, %i \n", _treeSnapshot.leftChildIndex, _treeSnapshot.rightChildIndex);
 
         _epoch = epoch;
-        _treeSnapshot = treeSnapshot;
 
         _received_child_elems = std::pair<bool, bool>(
             _treeSnapshot.leftChildIndex == -1,

@@ -157,7 +157,7 @@ public:
     // reset progress sharer to current clause sharing epoch
     void resetProgressSharer(int epoch) {
 	LOG(V4_VVER, "DCS reset progress sharer at epoch %i\n", epoch);
-        _sharer->initialize(epoch, _job->getJobTree().getSnapshot());
+        _sharer->initialize(epoch);
     }
 
 
@@ -278,8 +278,6 @@ private:
     }
 
     void requestMissingInterval() {
-        LOG(V4_VVER, "DCS sending interval request\n");
-
 
         // request a missing interval
         if (!_missing_epoch_intervals.empty()) {
@@ -294,6 +292,7 @@ private:
 
         // no interval to request, send empty message for aggregation
         } else {
+            LOG(V4_VVER, "DCS empty interval request in epoch %i\n", _last_epoch);
             
             // add default request and advance
             JobTreeProgressSharer::Request req;
