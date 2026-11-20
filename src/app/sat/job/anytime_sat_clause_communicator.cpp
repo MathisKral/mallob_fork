@@ -215,10 +215,13 @@ bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mp
 
     // broadcast request message
     if (msg.tag == MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST) {
-        /*
-        TODO
-        */
-        _cls_history->handleIntervalRequestBroadcast(msg.epoch);
+        
+        // forward request in msg payload
+        _cls_history->handleIntervalRequestBroadcast(
+            msg.epoch,
+            msg.treeIndexOfSender,
+            msg.payload
+        );
         return true;
     }
 

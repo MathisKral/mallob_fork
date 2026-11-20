@@ -191,13 +191,14 @@ public:
         
         // add request to progress sharer
         _sharer->addChildRequest(request, senderId);
+        _sharer->advance();
     }
 
-    void handleIntervalRequestBroadcast(int epoch) {
+    void handleIntervalRequestBroadcast(int epoch, int senderId, std::vector<int>& payload) {
         LOG(V4_VVER, "DCS received request broadcast for epoch %i\n", epoch);
         
         // advance broadcasting
-        
+        _sharer->broadcastRequest(payload, senderId);
     }
 
     void handleIntervalResponseAggregation(/*TODO*/) {

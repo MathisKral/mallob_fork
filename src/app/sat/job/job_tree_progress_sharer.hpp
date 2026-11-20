@@ -182,7 +182,6 @@ public:
             if (_received_child_elems.first) {
                 LOG(V1_WARN, "[WARN] DCS request aggregation tried to add child element that is already existent!\n");
             } else {
-		LOG(V4_VVER, "DCS progress aggregation received request from worker %i\n", senderId);
                 _current_request.merge(request);
                 _received_child_elems.first = true;
             }
@@ -190,7 +189,6 @@ public:
             if (_received_child_elems.second) {
                 LOG(V1_WARN, "[WARN] DCS request aggregation tried to add child element that is already existent!\n");
             } else {
-		LOG(V4_VVER, "DCS progress aggregation received request from worker %i\n", senderId);
                 _current_request.merge(request);
                 _received_child_elems.second = true;
             }
@@ -199,7 +197,7 @@ public:
         }
     }
 
-    void broadcastRequest(Request request, int senderId) {
+    void broadcastRequest(std::vector<int>& payload, int senderId) {
         if (_stage != REQUEST_BROADCAST) {
             LOG(V1_WARN, "[WARN] DCS request broadcast but in wrong stage!\n");
             return;
@@ -213,7 +211,7 @@ public:
         LOG(V4_VVER, "DCS received request broadcast from %i, sending to children\n", senderId);
 
         JobMessage& msg = _default_msg;
-        msg.payload = request.encode();
+        msg.payload = payload;
         msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST;
         _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
 
