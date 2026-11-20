@@ -195,7 +195,9 @@ public:
 
     void handleIntervalRequestBroadcast(int epoch) {
         LOG(V4_VVER, "DCS received request broadcast for epoch %i\n", epoch);
-        // TODO: worker.addTask...
+        
+        // advance broadcasting
+        
     }
 
     void handleIntervalResponseAggregation(/*TODO*/) {

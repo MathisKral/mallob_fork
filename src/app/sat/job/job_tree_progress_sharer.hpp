@@ -199,8 +199,31 @@ public:
         }
     }
 
+    void broadcastRequest(Request request, int senderId) {
+        if (_stage != REQUEST_BROADCAST) {
+            LOG(V1_WARN, "[WARN] DCS request broadcast but in wrong stage!\n");
+            return;
+        }
+
+        if (senderId != _treeSnapshot.parentIndex) {
+            LOG(V1_WARN, "[WARN], DCS revceived request broadcast message from wrong worker %i => %i", senderId, _treeSnapshot.parentIndex);
+            return;
+        }
+
+        LOG(V4_VVER, "DCS received request broadcast from %i, sending to children\n", senderId);
+
+        JobMessage& msg = _default_msg;
+        msg.payload = request.encode();
+        msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST;
+        _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
+
+        _stage = RESPONSE_AGGREGATION;
+    }
+
     // advance aggregation or broadcasting stage and send messages to parent or children respectively
     void advance() {
+
+        // in aggregation stage and all necessary request received
         if (_stage == REQUEST_AGGREGATION
             && _received_own_elems
             && _received_child_elems.first
@@ -214,14 +237,18 @@ public:
             if (_treeSnapshot.index == 0) {
                 LOG(V4_VVER, "DCS request aggregation finished on root node, starting broadcast\n");
 
-                _treeSnapshot.sendToAnyChildren(msg, MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST);
+                msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST;
+                _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
                 _stage = RESPONSE_AGGREGATION;
             } else {
                 LOG(V4_VVER, "DCS request aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
 
-                _treeSnapshot.sendToParent(msg, MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE);
+                msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE;
+                _treeSnapshot.sendToParent(msg, MSG_SEND_APPLICATION_MESSAGE);
                 _stage = REQUEST_BROADCAST;
             }
+
+            return;
         }
     }
 };
