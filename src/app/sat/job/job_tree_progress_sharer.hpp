@@ -208,8 +208,6 @@ public:
             return;
         }
 
-        LOG(V4_VVER, "DCS received request broadcast from %i, sending to children\n", senderId);
-
         JobMessage& msg = _default_msg;
         msg.payload = payload;
         msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST;
@@ -245,6 +243,13 @@ public:
                 _treeSnapshot.sendToParent(msg, MSG_SEND_APPLICATION_MESSAGE);
                 _stage = REQUEST_BROADCAST;
             }
+
+            // reset received elems variables
+            _received_own_elems = false;
+            _received_child_elems = std::pair<bool, bool>(
+                _treeSnapshot.leftChildIndex == -1,
+                _treeSnapshot.rightChildIndex == -1
+            );
 
             return;
         }

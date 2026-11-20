@@ -199,6 +199,14 @@ public:
         
         // advance broadcasting
         _sharer->broadcastRequest(payload, senderId);
+
+        // dont call `_sharer->advance() here because it is called when (1) an aggregation message comes in and`
+        // (2) when the worker finished preparing the clauses 
+
+        // ask worker to prepare clauses
+        /*
+        TODO: worker.addTask...
+        */
     }
 
     void handleIntervalResponseAggregation(/*TODO*/) {
