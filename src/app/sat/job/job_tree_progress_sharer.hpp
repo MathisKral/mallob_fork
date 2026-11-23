@@ -156,6 +156,10 @@ public:
             return out;
         }
 
+        std::vector<IntPair>& getIntervals() {
+            return intervals;
+        }
+
     private:
         int sortedBinaryInsert(IntPair& interval) {
             // IMPORTANT: assure that list is sorted!!!!
@@ -213,6 +217,16 @@ public:
 
         // default constructor
         Response() = default;
+
+        Response(std::vector<IntPair>&& intervals, std::vector<std::vector<int>>&& clauses) {
+            assert(intervals.size() == clauses.size());
+
+            for (int i = 0; i < intervals.size(); ++i) {
+                Slot slot;
+                slot.interval = intervals[i];
+                slot.clauses = clauses[i];
+            }
+        }
 
         Response(std::vector<int>&& payload) {
             if (payload.size() == 0) {
@@ -378,6 +392,12 @@ public:
         _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
 
         _stage = RESPONSE_AGGREGATION;
+    }
+
+    void addOwnResponse(Response response) {
+        /*
+        TODO add own response
+        */
     }
 
     // advance aggregation or broadcasting stage and send messages to parent or children respectively

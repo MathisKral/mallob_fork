@@ -10,6 +10,8 @@
 #include <memory>
 #include <vector>
 
+template<typename T> using VecVec = std::vector<std::vector<T>>;
+
 class DistributedClauseStorage {
 
 private:
@@ -17,11 +19,14 @@ private:
     // from HCS
     struct BackgroundTask {
         enum Type {INSERT, INSERT_AND_IMPORT, REQUEST} type;
+
         std::vector<IntPair> intervals;
+        VecVec<int> clauses; // this maybe changes later
+
         bool finished {false};
 
-        BackgroundTask(Type type, std::vector<IntPair>&& intervals) : 
-            type(type), intervals(intervals) {}
+        BackgroundTask(Type type, std::vector<IntPair>&& intervals, VecVec<int>&& clauses) : 
+            type(type), intervals(intervals), clauses(clauses) {}
     };
 
     // subclass worker for performing all data and request processing in the background
@@ -52,11 +57,11 @@ private:
             _bg_worker.run([this]() {runBackgroundWorker();});
         }
 
-        void addTask(BackgroundTask::Type type, std::vector<IntPair>&& intervals) {
+        void addTask(BackgroundTask::Type type, std::vector<IntPair>& intervals, VecVec<int>&& clauses) {
             // make sure the background worker is not running
             {
                 auto lock = _mtx_bg_task.getLock();
-                _bg_tasks.emplace_back(type, std::move(intervals));
+                _bg_tasks.emplace_back(type, std::move(intervals), std::move(clauses));
             }
             _cond_var_bg_task.notify();
             _num_open_tasks++;
@@ -178,7 +183,11 @@ public:
 
         // insert new set of clauses received from clause sharing
         LOG(V4_VVER, "DCS insert [%i,%i) buflen=...\n", epoch, epoch+1);
-        // TODO: worker.addTask...
+
+        // add INSERT_AND_IMPORT task to worker
+        std::vector<IntPair> interv = {IntPair(epoch, epoch+1)};
+        _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, interv, {std::move(clauses)});
+
         _last_epoch = epoch;
 
         // finally request progress if missing
@@ -203,13 +212,19 @@ public:
         // dont call `_sharer->advance() here because it is called when (1) an aggregation message comes in and`
         // (2) when the worker finished preparing the clauses 
 
+        // get requested intervals
+        JobTreeProgressSharer::Request req(std::move(payload));
+
         // ask worker to prepare clauses
-        //_worker.addTask(BackgroundTask::REQUEST, std::move(std::vector<IntPair>()));
+        _worker.addTask(BackgroundTask::REQUEST, req.getIntervals(), VecVec<int>());
     }
 
     void handleIntervalResponseAggregation(/*TODO*/) {
         LOG(V4_VVER, "DCS received response aggregation for interval [...,...)\n");
-        // TODO: worker.addTask...
+        
+        // add child request and advance
+        // TODO: add child request
+        _sharer->advance();
     }
 
     void handleIntervalResponseBroadcast(/*TODO*/) {
@@ -220,8 +235,34 @@ public:
 
     // process all finished tasks from the worker
     void handleFinishedTasks() {
-        //LOG(V4_VVER, "DCS handle finished worker tasks\n");
-        //TODO: worker.addTask...
+        while (_worker.hasFinishedTask()) {
+
+            auto task = _worker.getFinishedTask();
+
+            if (task.type == BackgroundTask::INSERT) {
+                /*
+                TODO
+                */
+                return;
+            } 
+
+            if (task.type == BackgroundTask::REQUEST) {
+                // prepared slots for sharing
+                JobTreeProgressSharer::Response response(std::move(task.intervals), std::move(task.clauses));
+                
+                // add response to job tree sharer
+                _sharer->addOwnResponse(response);
+                _sharer->advance();
+                return;
+            }
+
+            if (task.type == BackgroundTask::INSERT_AND_IMPORT) {
+                /*
+                TODO
+                */
+                return;
+            }
+        }
     }
 
 private:
