@@ -127,12 +127,14 @@ public:
                 out += "), ";
                 it++;
             }
-            out += "[";
-            out += std::to_string(it->first);
-            out += ", ";
-            out += std::to_string(it->second);
-            out += ")";
-            out += " ]";
+            if (it < intervals.end()) {
+                out += "[";
+                out += std::to_string(it->first);
+                out += ", ";
+                out += std::to_string(it->second);
+                out += ")";
+                out += " ]";
+            }
 
             return out;
         }
