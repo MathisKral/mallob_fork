@@ -116,6 +116,10 @@ public:
         }
 
         std::string formatIntervals() {
+
+	    if (intervals.size() == 0)
+	        return std::string("[ ]");
+
             std::string out("[ ");
 
             auto it = intervals.begin();
@@ -127,14 +131,12 @@ public:
                 out += "), ";
                 it++;
             }
-            if (it < intervals.end()) {
-                out += "[";
-                out += std::to_string(it->first);
-                out += ", ";
-                out += std::to_string(it->second);
-                out += ")";
-                out += " ]";
-            }
+            out += "[";
+      	    out += std::to_string(it->first);
+            out += ", ";
+	    out += std::to_string(it->second);
+      	    out += ")";
+            out += " ]";
 
             return out;
         }
