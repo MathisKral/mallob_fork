@@ -118,15 +118,22 @@ public:
         std::string formatIntervals() {
             std::string out("[ ");
 
-            for (auto interval : intervals) {
+            auto it = intervals.begin();
+            while (it < intervals.end()-1) {
                 out += "[";
-                out += std::to_string(interval.first);
+                out += std::to_string(it->first);
                 out += ", ";
-                out += std::to_string(interval.second);
+                out += std::to_string(it->second);
                 out += "), ";
+                it++;
             }
-
+            out += "[";
+            out += std::to_string(it->first);
+            out += ", ";
+            out += std::to_string(it->second);
+            out += ")";
             out += " ]";
+
             return out;
         }
 
@@ -298,7 +305,7 @@ public:
                 _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
                 _stage = RESPONSE_AGGREGATION;
             } else {
-                LOG(V4_VVER, "DCS request intervals: %s", _current_request.formatIntervals().c_str());
+                LOG(V4_VVER, "DCS request intervals: %s\n", _current_request.formatIntervals().c_str());
                 LOG(V4_VVER, "DCS request aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
 
                 msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE;
