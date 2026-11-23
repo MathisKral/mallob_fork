@@ -6,6 +6,7 @@
 #include "data/job_transfer.hpp"
 #include "util/logger.hpp"
 #include <list>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -22,7 +23,7 @@ public:
     // request struct that is beeing aggregated and broadcastet between all workers
     class Request{
     private:
-        std::list<std::pair<int, int>> intervals;
+        std::vector<std::pair<int, int>> intervals;
         std::vector<int> requests;
         std::vector<int> workers;
 
@@ -88,11 +89,15 @@ public:
         }
 
         // add one interval to the request
-        void addInterval(std::pair<int, int> interval, int worker) {
-            // FIXME: only temporary
-            // the intervals list has to be sorted!!!!
-            intervals.push_back(interval);
-            requests.push_back(1);
+        void addInterval(std::pair<int, int>&& interval, int worker) {
+            
+            // add interval and request
+            int pos = sortedBinaryInsert(interval);
+            requests.insert(requests.begin() + pos, 1);
+
+            // TODO: check for overlap
+
+            // ad worker to list
             workers.push_back(worker);
         }
 
@@ -108,6 +113,62 @@ public:
             for (auto worker : other.workers) {
                 workers.push_back(worker);
             }
+        }
+
+        std::string formatIntervals() {
+            std::string out("[ ");
+
+            for (auto interval : intervals) {
+                out += "[";
+                out += std::to_string(interval.first);
+                out += ", ";
+                out += std::to_string(interval.second);
+                out += "), ";
+            }
+
+            out += " ]";
+            return out;
+        }
+
+    private:
+        int sortedBinaryInsert(std::pair<int, int>& interval) {
+            // IMPORTANT: assure that list is sorted!!!!
+
+            // append if intervals is empty
+            if (intervals.size() == 0) {
+                intervals.push_back(std::move(interval));
+                return 0;
+            }
+
+            // find position of the new element in the vector
+            int low = 0, high = intervals.size()-1, pos = 0;
+            while (low <= high) {
+                int current = (high - low) / 2;
+
+                // check if position is found
+                if (intervals.at(current).first <= interval.first) {
+                    if (current == intervals.size() - 1) {
+                        pos = current+1;
+                        break;
+                    } else if (intervals.at(current+1).first > interval.first) {
+                        pos = current+1;
+                        break;
+                    }
+                }
+
+                // update position
+                if (intervals.at(current).first < interval.first) {
+                    low = current+1;
+                } else {
+                    high = current-1;
+                }
+            }
+
+            // insert element
+            // TODO: check if this also works for end of vector!!!
+            intervals.insert(intervals.begin() + pos, std::move(interval));
+
+            return pos;
         }
     };
 
@@ -237,6 +298,7 @@ public:
                 _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
                 _stage = RESPONSE_AGGREGATION;
             } else {
+                LOG(V4_VVER, "DCS request intervals: %s", _current_request.formatIntervals().c_str());
                 LOG(V4_VVER, "DCS request aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
 
                 msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE;
