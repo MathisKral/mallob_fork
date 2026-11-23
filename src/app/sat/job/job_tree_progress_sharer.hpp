@@ -5,7 +5,7 @@
 #include "comm/msgtags.h"
 #include "data/job_transfer.hpp"
 #include "util/logger.hpp"
-#include <list>
+#include <cassert>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,14 +20,52 @@ private:
     enum Stage {REQUEST_AGGREGATION, REQUEST_BROADCAST, RESPONSE_AGGREGATION, RESPONSE_BROADCAST, DONE};
 
 public:
-    // request struct that is beeing aggregated and broadcastet between all workers
-    class Request{
+    // request structure that is beeing aggregated and broadcastet between all workers
+    class Request {
     private:
-        std::vector<std::pair<int, int>> intervals;
+        std::vector<IntPair> intervals;
         std::vector<int> requests;
         std::vector<int> workers;
 
     public:
+
+        // default constructor
+        Request() {}
+
+        Request (std::vector<int>&& payload) {
+            int sep1_idx = -1, sep2_idx = -1;
+            for (int i = 0; i < payload.size(); ++i) {
+                if (payload[i] != PROGRESS_SHARER_SEPERATOR) {
+                    continue;
+                } else if (sep1_idx == -1) {
+                    sep1_idx = i;
+                    continue;
+                } else if (sep2_idx == -1) {
+                    sep2_idx = i;
+                            return;}
+            }
+
+            // decode intervals
+            assert(sep1_idx % 2 == 0);
+            for (int i = 0; i < sep1_idx; i+=2) {
+                intervals.push_back(IntPair(
+                    payload[i],
+                    payload[i+1]
+                ));
+            }
+
+            // decode requests
+            for (int i = sep1_idx+1; i < sep2_idx; ++i) {
+                requests.push_back(payload[i]);
+            }
+
+            // decode worker list
+            for (int i = sep2_idx+1; i < payload.size(); ++i) {
+                workers.push_back(payload[i]);
+            }
+        }
+
+
         std::vector<int> encode() {
             std::vector<int> result;
 
@@ -52,44 +90,9 @@ public:
             return result;
         }
 
-        static Request decode(std::vector<int> payload) {
-            Request request;
-            int sep1_idx = -1, sep2_idx = -1;
-            for (int i = 0; i < payload.size(); ++i) {
-                if (payload[i] != PROGRESS_SHARER_SEPERATOR) {
-                    continue;
-                } else if (sep1_idx == -1) {
-                    sep1_idx = i;
-                    continue;
-                } else if (sep2_idx == -1) {
-                    sep2_idx = i;
-                }
-            }
-
-            // decode intervals
-            assert(sep1_idx % 2 == 0);
-            for (int i = 0; i < sep1_idx; i+=2) {
-                request.intervals.push_back(std::pair<int, int>(
-                    payload[i],
-                    payload[i+1]
-                ));
-            }
-
-            // decode requests
-            for (int i = sep1_idx+1; i < sep2_idx; ++i) {
-                request.requests.push_back(payload[i]);
-            }
-
-            // decode worker list
-            for (int i = sep2_idx+1; i < payload.size(); ++i) {
-                request.workers.push_back(payload[i]);
-            }
-
-            return request;
-        }
 
         // add one interval to the request
-        void addInterval(std::pair<int, int>&& interval, int worker) {
+        void addInterval(IntPair&& interval, int worker) {
             
             // add interval and request
             int pos = sortedBinaryInsert(interval);
@@ -134,7 +137,7 @@ public:
             out += "[";
       	    out += std::to_string(it->first);
             out += ", ";
-	    out += std::to_string(it->second);
+	        out += std::to_string(it->second);
       	    out += ")";
             out += " ]";
 
@@ -142,7 +145,7 @@ public:
         }
 
     private:
-        int sortedBinaryInsert(std::pair<int, int>& interval) {
+        int sortedBinaryInsert(IntPair& interval) {
             // IMPORTANT: assure that list is sorted!!!!
 
             // append if intervals is empty
@@ -183,6 +186,84 @@ public:
         }
     };
 
+    // response structure that is aggregated and broadcasted along the tree
+    class Response {
+    private:
+        struct Slot {
+            IntPair interval;
+            std::vector<int> clauses; // TODO: make this a Claue store later!!!
+        };
+
+    private:
+        std::vector<Slot> slots;
+
+    public:
+
+        // default constructor
+        Response() {}
+
+        Response(std::vector<int>&& payload) {
+            if (payload.size() == 0) {
+                return;
+            }
+
+            int current_min = 0;
+            int current_max = 0;
+            while (true) {
+                Slot slot;
+
+                while (payload.at(current_max) != PROGRESS_SHARER_SEPERATOR)
+                    current_max++;
+
+                // decode interval
+                slot.interval = IntPair(
+                    payload.at(current_min),
+                    payload.at(current_min+1)
+                );
+
+                current_min = current_max+1;
+                current_max++;
+                while (payload.at(current_max != PROGRESS_SHARER_SEPERATOR))
+                    current_max++;
+
+                // decode clauses
+                for (int i = current_min; i < current_max; i++) {
+                    slot.clauses.push_back(payload.at(i));
+                }
+
+                // push back slot
+                slots.push_back(std::move(slot));
+
+                if (current_max == payload.size()-1)
+                    break;
+            }
+        }
+
+        std::vector<int> encode() {
+            std::vector<int> out;
+            for (auto slot : slots) {
+                out.push_back(slot.interval.first);
+                out.push_back(slot.interval.second);
+                out.push_back(PROGRESS_SHARER_SEPERATOR);
+                
+                for (auto clause : slot.clauses) {
+                    out.push_back(clause);
+                }
+                out.push_back(PROGRESS_SHARER_SEPERATOR);
+            }
+
+            return out;
+        }
+
+        void merge(Response other) {
+            for (auto slot : other.slots) {
+                // merge slots
+                // TODO: this sould actually merge slots!!!
+                slots.push_back(slot);
+            }
+        }
+    };
+
 
 private:
     int _epoch {0};
@@ -194,7 +275,6 @@ private:
     std::pair<bool, bool> _received_child_elems;
     bool _received_own_elems {false};
 
-    Request _default_req;
     JobMessage _default_msg;
 
     Request _current_request;
@@ -206,7 +286,6 @@ public:
             _job->getId(), _job->getActorContextId(), 
             _job->getRevision(), _epoch, MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE
         );
-        _default_msg.payload = _default_req.encode();
     }
 
     // initialize for a new epoch
@@ -304,12 +383,12 @@ public:
             // if root node, start broadcast
             if (_treeSnapshot.index == 0) {
                 LOG(V4_VVER, "DCS request aggregation finished on root node, starting broadcast\n");
+                LOG(V4_VVER, "DCS request intervals: %s\n", _current_request.formatIntervals().c_str());
 
                 msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST;
                 _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
                 _stage = RESPONSE_AGGREGATION;
             } else {
-                LOG(V4_VVER, "DCS request intervals: %s\n", _current_request.formatIntervals().c_str());
                 LOG(V4_VVER, "DCS request aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
 
                 msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE;

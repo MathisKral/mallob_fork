@@ -2,6 +2,7 @@
 
 #include "app/sat/job/base_sat_job.hpp"
 #include "app/sat/job/job_tree_progress_sharer.hpp"
+#include "data/job_transfer.hpp"
 #include "util/logger.hpp"
 #include "util/sys/background_worker.hpp"
 #include "util/sys/threading.hpp"
@@ -16,12 +17,11 @@ private:
     // from HCS
     struct BackgroundTask {
         enum Type {INSERT, INSERT_AND_IMPORT, REQUEST} type;
-        int epochBegin;
-        int epochEnd;
+        std::vector<IntPair> intervals;
         bool finished {false};
 
-        BackgroundTask(Type type, int epochBegin, int epochEnd) : 
-            type(type), epochBegin(epochBegin), epochEnd(epochEnd) {}
+        BackgroundTask(Type type, std::vector<IntPair>&& intervals) : 
+            type(type), intervals(intervals) {}
     };
 
     // subclass worker for performing all data and request processing in the background
@@ -52,11 +52,11 @@ private:
             _bg_worker.run([this]() {runBackgroundWorker();});
         }
 
-        void addTask(BackgroundTask::Type type, int epochBegin, int epochEnd) {
+        void addTask(BackgroundTask::Type type, std::vector<IntPair>&& intervals) {
             // make sure the background worker is not running
             {
                 auto lock = _mtx_bg_task.getLock();
-                _bg_tasks.emplace_back(type, epochBegin, epochEnd);
+                _bg_tasks.emplace_back(type, std::move(intervals));
             }
             _cond_var_bg_task.notify();
             _num_open_tasks++;
@@ -204,9 +204,7 @@ public:
         // (2) when the worker finished preparing the clauses 
 
         // ask worker to prepare clauses
-        /*
-        TODO: worker.addTask...
-        */
+        //_worker.addTask(BackgroundTask::REQUEST, std::move(std::vector<std::pair<int, int>>()));
     }
 
     void handleIntervalResponseAggregation(/*TODO*/) {
@@ -297,7 +295,7 @@ private:
             
             // add missing interval to request and advance request
             JobTreeProgressSharer::Request req;
-            req.addInterval(std::pair<int, int>(intervBegin, intervEnd), _job->getJobTree().getIndex());
+            req.addInterval(IntPair(intervBegin, intervEnd), _job->getJobTree().getIndex());
             _sharer->addOwnRequest(req);
             _sharer->advance();
 

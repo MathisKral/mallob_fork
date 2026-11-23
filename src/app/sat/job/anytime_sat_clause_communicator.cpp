@@ -208,7 +208,7 @@ bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mp
         _cls_history->handleIntervalRequestAggregation(
             msg.epoch,
             msg.treeIndexOfSender,
-            JobTreeProgressSharer::Request::decode(msg.payload)
+            JobTreeProgressSharer::Request(std::move(msg.payload))
         );
         return true;
     }
