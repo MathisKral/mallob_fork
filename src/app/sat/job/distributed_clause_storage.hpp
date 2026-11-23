@@ -283,26 +283,25 @@ private:
         for (auto& [begin, end] : _missing_epoch_intervals) 
             missingIntervals += "[" + std::to_string(begin) + "," + std::to_string(end) + ") ";
         if (!missingIntervals.empty())
-            LOG(V4_VVER, "HCS missing %s\n", missingIntervals.c_str());
+            LOG(V4_VVER, "DCS missing %s\n", missingIntervals.c_str());
     }
 
     void requestMissingInterval() {
 
         // request a missing interval
         if (!_missing_epoch_intervals.empty()) {
-            auto [intervBegin, intervEnd] = _missing_epoch_intervals.front();
-            LOG(V4_VVER, "DCS requesting [%i, %i) in epoch %i\n", intervBegin, intervEnd, _last_epoch);
             
             // add missing interval to request and advance request
             JobTreeProgressSharer::Request req;
-            req.addInterval(IntPair(intervBegin, intervEnd), _job->getJobTree().getIndex());
+            for (auto interval : _missing_epoch_intervals)
+                req.addInterval(IntPair(interval.first, interval.second));
+
             _sharer->addOwnRequest(req);
             _sharer->advance();
 
         // no interval to request, send empty message for aggregation
         } else {
-            LOG(V4_VVER, "DCS empty interval request in epoch %i\n", _last_epoch);
-            
+
             // add default request and advance
             JobTreeProgressSharer::Request req;
             _sharer->addOwnRequest(req);

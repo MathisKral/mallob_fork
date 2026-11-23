@@ -25,7 +25,6 @@ public:
     private:
         std::vector<IntPair> intervals;
         std::vector<int> requests;
-        std::vector<int> workers;
 
     public:
 
@@ -55,13 +54,8 @@ public:
             }
 
             // decode requests
-            for (int i = sep1_idx+1; i < sep2_idx; ++i) {
+            for (int i = sep1_idx+1; i < payload.size(); ++i) {
                 requests.push_back(payload[i]);
-            }
-
-            // decode worker list
-            for (int i = sep2_idx+1; i < payload.size(); ++i) {
-                workers.push_back(payload[i]);
             }
         }
 
@@ -80,41 +74,26 @@ public:
             for (auto req : requests) {
                 result.push_back(req);
             }
-            result.push_back(PROGRESS_SHARER_SEPERATOR);
-
-            // encode worker list
-            for (auto worker : workers) {
-                result.push_back(worker);
-            }
             
             return result;
         }
 
 
         // add one interval to the request
-        void addInterval(IntPair&& interval, int worker) {
+        void addInterval(IntPair&& interval) {
             
             // add interval and request
             int pos = sortedBinaryInsert(interval);
             requests.insert(requests.begin() + pos, 1);
 
             // TODO: check for overlap
-
-            // ad worker to list
-            workers.push_back(worker);
         }
 
         void merge(Request other) {
-            // FIXME: only temporary
-            // the intervals have to be merged and sorted!!!!
-            for (auto interval : other.intervals) {
-                intervals.push_back(interval);
-            }
-            for (auto request : other.requests) {
-                requests.push_back(request);
-            }
-            for (auto worker : other.workers) {
-                workers.push_back(worker);
+            assert(other.intervals.size() == other.requests.size());
+
+            for (int i = 0; i < other.intervals.size(); ++i) {
+                addInterval(std::move(other.intervals[i]));
             }
         }
 
@@ -160,18 +139,18 @@ public:
                 int current = (high - low) / 2;
 
                 // check if position is found
-                if (intervals.at(current).first <= interval.first) {
+                if (intervals[current].first <= interval.first) {
                     if (current == intervals.size() - 1) {
                         pos = current+1;
                         break;
-                    } else if (intervals.at(current+1).first > interval.first) {
+                    } else if (intervals[current+1].first > interval.first) {
                         pos = current+1;
                         break;
                     }
                 }
 
                 // update position
-                if (intervals.at(current).first < interval.first) {
+                if (intervals[current].first < interval.first) {
                     low = current+1;
                 } else {
                     high = current-1;
@@ -212,23 +191,23 @@ public:
             while (true) {
                 Slot slot;
 
-                while (payload.at(current_max) != PROGRESS_SHARER_SEPERATOR)
+                while (payload[current_max] != PROGRESS_SHARER_SEPERATOR)
                     current_max++;
 
                 // decode interval
                 slot.interval = IntPair(
-                    payload.at(current_min),
-                    payload.at(current_min+1)
+                    payload[current_min],
+                    payload[current_min+1]
                 );
 
                 current_min = current_max+1;
                 current_max++;
-                while (payload.at(current_max != PROGRESS_SHARER_SEPERATOR))
+                while (payload[current_max != PROGRESS_SHARER_SEPERATOR])
                     current_max++;
 
                 // decode clauses
                 for (int i = current_min; i < current_max; i++) {
-                    slot.clauses.push_back(payload.at(i));
+                    slot.clauses.push_back(payload[i]);
                 }
 
                 // push back slot
