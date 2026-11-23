@@ -136,7 +136,7 @@ public:
             // find position of the new element in the vector
             int low = 0, high = intervals.size()-1, pos = 0;
             while (low <= high) {
-                int current = (high - low) / 2;
+                int current = (high + low) / 2;
 
                 // check if position is found
                 if (intervals[current].first <= interval.first) {
@@ -279,6 +279,7 @@ public:
 	    LOG(V4_VVER, "DCS progress sharer %i, %i \n", _treeSnapshot.leftChildIndex, _treeSnapshot.rightChildIndex);
 
         _epoch = epoch;
+        _default_msg.epoch = _epoch;
 
         _received_child_elems = std::pair<bool, bool>(
             _treeSnapshot.leftChildIndex == -1,
