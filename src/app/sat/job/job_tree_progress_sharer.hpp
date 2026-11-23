@@ -86,7 +86,40 @@ public:
             int pos = sortedBinaryInsert(interval);
             requests.insert(requests.begin() + pos, 1);
 
-            // TODO: check for overlap
+            // check overlap with left interval
+            if (pos > 0) {
+                if (intervals[pos-1].second >= intervals[pos].first) {
+
+                    // merge 2 intervals
+                    intervals[pos-1] = IntPair(
+                        intervals[pos-1].first,
+                        intervals[pos].second
+                    );
+
+                    requests[pos-1] += requests[pos];
+
+                    intervals.erase(intervals.begin() + pos);
+                    requests.erase(requests.begin() + pos);
+                    pos--;
+                }
+            }
+
+            // check overlap with right interval
+            if (pos < intervals.size()-1) {
+                if (intervals[pos+1].first <= intervals[pos].second) {
+
+                    // merge 2 intervals
+                    intervals[pos+1] = IntPair(
+                        intervals[pos].first,
+                        intervals[pos+1].second
+                    );
+
+                    requests[pos+1] += requests[pos];
+
+                    intervals.erase(intervals.begin() + pos);
+                    requests.erase(requests.begin() + pos);
+                }
+            }
         }
 
         void merge(Request other) {
