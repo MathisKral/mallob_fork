@@ -145,7 +145,7 @@ Worker _worker;
 std::unique_ptr<JobTreeProgressSharer> _sharer;
 
 int _last_epoch {0};
-std::vector<std::pair<int, int>> _missing_epoch_intervals;
+std::vector<IntPair> _missing_epoch_intervals;
 
 public:
     DistributedClauseStorage(BaseSatJob* job, int max_same_breadth_slots) : 
@@ -204,7 +204,7 @@ public:
         // (2) when the worker finished preparing the clauses 
 
         // ask worker to prepare clauses
-        //_worker.addTask(BackgroundTask::REQUEST, std::move(std::vector<std::pair<int, int>>()));
+        //_worker.addTask(BackgroundTask::REQUEST, std::move(std::vector<IntPair>()));
     }
 
     void handleIntervalResponseAggregation(/*TODO*/) {
@@ -251,9 +251,9 @@ private:
             } else if (iBegin < epochBegin && epochEnd < iEnd) {
                 // match in the middle: separate interval into two smaller ones
                 LOG(V4_VVER, "HCS close hole mid\n");
-                std::pair<int, int> secondInterval = {epochEnd, iEnd};
+                IntPair secondInterval = {epochEnd, iEnd};
                 // insert first new interval
-                it = _missing_epoch_intervals.insert(it, std::pair<int, int>(iBegin, epochBegin));
+                it = _missing_epoch_intervals.insert(it, IntPair(iBegin, epochBegin));
                 // go to second (existing) interval
                 ++it;
                 // overwrite with new bounds

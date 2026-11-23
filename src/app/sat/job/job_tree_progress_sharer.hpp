@@ -30,7 +30,7 @@ public:
     public:
 
         // default constructor
-        Request() {}
+        Request() = default;
 
         Request (std::vector<int>&& payload) {
             int sep1_idx = -1, sep2_idx = -1;
@@ -200,7 +200,7 @@ public:
     public:
 
         // default constructor
-        Response() {}
+        Response() = default;
 
         Response(std::vector<int>&& payload) {
             if (payload.size() == 0) {
