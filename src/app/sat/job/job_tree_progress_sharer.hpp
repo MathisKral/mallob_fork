@@ -390,7 +390,7 @@ public:
             return;
         }
 
-        if (senderId != _treeSnapshot.parentIndex) {
+        if (senderId != _treeSnapshot.parentIndex || senderId != _treeSnapshot.index) {
             LOG(V1_WARN, "[WARN] DCS revceived request broadcast message from wrong worker %i => %i", senderId, _treeSnapshot.parentIndex);
             return;
         }
@@ -444,7 +444,7 @@ public:
             return;
         }
 
-        if (senderId != _treeSnapshot.parentIndex) {
+        if (senderId != _treeSnapshot.parentIndex || senderId != _treeSnapshot.index) {
             LOG(V1_WARN, "[WARN] DCS revceived response broadcast message from wrong worker %i => %i", senderId, _treeSnapshot.parentIndex);
             return;
         }
@@ -467,6 +467,9 @@ public:
             && _received_child_elems.second
         ) {
 
+            // now in request broadcast stage
+            _stage = REQUEST_BROADCAST;
+
             JobMessage& msg = _default_msg;
             msg.payload = _current_request.encode();
 
@@ -476,14 +479,12 @@ public:
                 LOG(V4_VVER, "DCS request intervals: %s\n", _current_request.formatIntervals().c_str());
 
                 msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST;
-                _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
-                _stage = RESPONSE_AGGREGATION;
+                _treeSnapshot.send(0, MSG_SEND_APPLICATION_MESSAGE, msg);
             } else {
                 LOG(V4_VVER, "DCS request aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
 
                 msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE;
                 _treeSnapshot.sendToParent(msg, MSG_SEND_APPLICATION_MESSAGE);
-                _stage = REQUEST_BROADCAST;
             }
 
             // reset received elems variables
@@ -502,6 +503,10 @@ public:
             && _received_child_elems.first
             && _received_child_elems.second
         ) {
+
+            // now in Response broadcast stage
+            _stage = RESPONSE_BROADCAST;
+
             JobMessage& msg = _default_msg;
             msg.payload = _current_response.encode();
 
@@ -511,14 +516,12 @@ public:
                 // TODO: log response intervals
 
                 msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_BROADCAST;
-                _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
-                _stage = DONE;
+                _treeSnapshot.send(0, MSG_SEND_APPLICATION_MESSAGE, msg);
             } else {
-                LOG(V4_VVER, "DCS response aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
+                LOG(V4_VVER, "DCS response aggregation finished on worker %i, sending response to parent\n", _treeSnapshot.index);
 
                 msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_AGGREGATE;
                 _treeSnapshot.sendToParent(msg, MSG_SEND_APPLICATION_MESSAGE);
-                _stage = RESPONSE_BROADCAST;
             }
 
             return;
