@@ -208,7 +208,7 @@ bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mp
         _cls_history->handleIntervalRequestAggregation(
             msg.epoch,
             msg.treeIndexOfSender,
-            JobTreeProgressSharer::Request(std::move(msg.payload))
+            JobTreeProgressSharer::Request(msg.payload)
         );
         return true;
     }
@@ -227,19 +227,21 @@ bool AnytimeSatClauseCommunicator::handleClauseHistoryMessage(int source, int mp
 
     // aggregate response
     if (msg.tag == MSG_FORWARD_HISTORIC_CLAUSES_AGGREGATE) {
-        /*
-        TODO
-        */
-        _cls_history->handleIntervalResponseAggregation();
+        _cls_history->handleIntervalResponseAggregation(
+            msg.epoch,
+            msg.treeIndexOfSender,
+            JobTreeProgressSharer::Response(msg.payload)
+        );
         return true;
     }
 
     // broadcast response
     if (msg.tag == MSG_FORWARD_HISTORIC_CLAUSES_BROADCAST) {
-        /*
-        TODO
-        */
-        _cls_history->handleIntervalResponseBroadcast();
+        _cls_history->handleIntervalResponseBroadcast(
+            msg.epoch,
+            msg.treeIndexOfSender,
+            msg.payload
+        );
         return true;
     }
     return false;

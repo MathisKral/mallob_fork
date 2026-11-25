@@ -31,7 +31,7 @@ public:
         // default constructor
         Request() = default;
 
-        Request (std::vector<int>&& payload) {
+        Request (std::vector<int>& payload) {
             int sep1_idx = -1, sep2_idx = -1;
             for (int i = 0; i < payload.size(); ++i) {
                 if (payload[i] != PROGRESS_SHARER_SEPERATOR) {
@@ -224,11 +224,14 @@ public:
             for (int i = 0; i < intervals.size(); ++i) {
                 Slot slot;
                 slot.interval = intervals[i];
-                slot.clauses = clauses[i];
+                
+                // add this later when clauses are actually there
+                // slot.clauses = clauses[i]; 
+                slot.clauses = {};
             }
         }
 
-        Response(std::vector<int>&& payload) {
+        Response(std::vector<int>& payload) {
             if (payload.size() == 0) {
                 return;
             }
@@ -288,6 +291,10 @@ public:
                 slots.push_back(slot);
             }
         }
+
+        std::vector<Slot>& getSlots() {
+            return slots;
+        }
     };
 
 
@@ -304,6 +311,7 @@ private:
     JobMessage _default_msg;
 
     Request _current_request;
+    Response _current_response;
 
 public:
     JobTreeProgressSharer(BaseSatJob* job) :
@@ -334,6 +342,7 @@ public:
         );
         _received_own_elems = false;
         _current_request = Request();
+        _current_response = Response();
 
         _stage = REQUEST_AGGREGATION;
     }
@@ -382,7 +391,7 @@ public:
         }
 
         if (senderId != _treeSnapshot.parentIndex) {
-            LOG(V1_WARN, "[WARN], DCS revceived request broadcast message from wrong worker %i => %i", senderId, _treeSnapshot.parentIndex);
+            LOG(V1_WARN, "[WARN] DCS revceived request broadcast message from wrong worker %i => %i", senderId, _treeSnapshot.parentIndex);
             return;
         }
 
@@ -395,15 +404,63 @@ public:
     }
 
     void addOwnResponse(Response response) {
-        /*
-        TODO add own response
-        */
+        if (_stage != RESPONSE_AGGREGATION) {
+            LOG(V1_WARN, "[WARN] DCS response aggregation tried but in wrong stage!\n");
+            return;
+        }
+
+        _current_response.merge(response);
+        _received_own_elems = true;
+    }
+
+    void addChildResponse(Response response, int senderId) {
+        if (_stage != RESPONSE_AGGREGATION) {
+            LOG(V1_WARN, "[WARN] DCS response aggregation received child response but in wrong stage!\n");
+            return;
+        }
+
+        if (senderId == _treeSnapshot.leftChildIndex) {
+            if (_received_child_elems.first) {
+                LOG(V1_WARN, "[WARN] DCS response aggregation tried to add child element that is already existent!\n");
+            } else {
+                _current_response.merge(response);
+                _received_child_elems.first = true;
+            }
+        } else if (senderId == _treeSnapshot.rightChildIndex) {
+            if (_received_child_elems.second) {
+                LOG(V1_WARN, "[WARN] DCS response aggregation tried to add child element that is already existent!\n");
+            } else {
+                _current_response.merge(response);
+                _received_child_elems.second = true;
+            }
+        } else {
+            LOG(V1_WARN, "[WARN] DCS response aggregation got response from wrong worker id!\n");
+        }
+    }
+
+    void broadcastResponse(std::vector<int>& payload, int senderId) {
+        if (_stage != RESPONSE_BROADCAST) {
+            LOG(V1_WARN, "[WARN] DCS response broadcast but in wrong stage!\n");
+            return;
+        }
+
+        if (senderId != _treeSnapshot.parentIndex) {
+            LOG(V1_WARN, "[WARN] DCS revceived response broadcast message from wrong worker %i => %i", senderId, _treeSnapshot.parentIndex);
+            return;
+        }
+
+        JobMessage& msg = _default_msg;
+        msg.payload = payload;
+        msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_BROADCAST;
+        _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
+
+        _stage = DONE;
     }
 
     // advance aggregation or broadcasting stage and send messages to parent or children respectively
     void advance() {
 
-        // in aggregation stage and all necessary request received
+        // in request aggregation stage and all necessary requests received
         if (_stage == REQUEST_AGGREGATION
             && _received_own_elems
             && _received_child_elems.first
@@ -435,6 +492,34 @@ public:
                 _treeSnapshot.leftChildIndex == -1,
                 _treeSnapshot.rightChildIndex == -1
             );
+
+            return;
+        }
+
+        // in response aggregation stage and all necessary responses received
+        if (_stage == RESPONSE_AGGREGATION
+            && _received_own_elems
+            && _received_child_elems.first
+            && _received_child_elems.second
+        ) {
+            JobMessage& msg = _default_msg;
+            msg.payload = _current_response.encode();
+
+            // if root node, start broadcast
+            if (_treeSnapshot.index == 0) {
+                LOG(V4_VVER, "DCS response aggregation finished on root node, starting broadcast\n");
+                // TODO: log response intervals
+
+                msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_BROADCAST;
+                _treeSnapshot.sendToAnyChildren(msg, MSG_SEND_APPLICATION_MESSAGE);
+                _stage = DONE;
+            } else {
+                LOG(V4_VVER, "DCS response aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
+
+                msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_AGGREGATE;
+                _treeSnapshot.sendToParent(msg, MSG_SEND_APPLICATION_MESSAGE);
+                _stage = RESPONSE_BROADCAST;
+            }
 
             return;
         }

@@ -195,7 +195,7 @@ public:
     }
 
     // handle the request for a interval
-    void handleIntervalRequestAggregation(int epoch, int senderId, JobTreeProgressSharer::Request request) {
+    void handleIntervalRequestAggregation(int epoch, int senderId, JobTreeProgressSharer::Request&& request) {
         LOG(V4_VVER, "DCS received request aggregation for epoch %i from worker %i\n", epoch, senderId);
         
         // add request to progress sharer
@@ -213,23 +213,39 @@ public:
         // (2) when the worker finished preparing the clauses 
 
         // get requested intervals
-        JobTreeProgressSharer::Request req(std::move(payload));
+        JobTreeProgressSharer::Request req(payload);
 
         // ask worker to prepare clauses
         _worker.addTask(BackgroundTask::REQUEST, req.getIntervals(), VecVec<int>());
     }
 
-    void handleIntervalResponseAggregation(/*TODO*/) {
-        LOG(V4_VVER, "DCS received response aggregation for interval [...,...)\n");
+    void handleIntervalResponseAggregation(int epoch, int senderId, JobTreeProgressSharer::Response&& response) {
+        LOG(V4_VVER, "DCS received response aggregation epoch %i from worker %i\n", epoch, senderId);
         
         // add child request and advance
-        // TODO: add child request
+        _sharer->addChildResponse(response, senderId);
         _sharer->advance();
     }
 
-    void handleIntervalResponseBroadcast(/*TODO*/) {
+    void handleIntervalResponseBroadcast(int epoch, int senderId, std::vector<int>& payload) {
         LOG(V4_VVER, "DCS received response broadcast for interval [...,...)\n");
-        // TODO: worker.addTask...
+        
+        // advance broadcasting
+        _sharer->broadcastResponse(payload, senderId);
+
+        // get response
+        JobTreeProgressSharer::Response res(payload);
+
+        // ask worker to import clauses
+        auto slots = res.getSlots();
+        std::vector<IntPair> intervals;
+        VecVec<int> clauses;
+        for (auto slot : slots) {
+            intervals.push_back(slot.interval);
+            clauses.push_back(slot.clauses);
+        }
+        _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, intervals, std::move(clauses));
+
     }
 
 
