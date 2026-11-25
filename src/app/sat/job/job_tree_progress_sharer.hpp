@@ -390,7 +390,7 @@ public:
             return;
         }
 
-        if (senderId != _treeSnapshot.parentIndex || senderId != _treeSnapshot.index) {
+        if (senderId != _treeSnapshot.parentIndex && senderId != _treeSnapshot.index) {
             LOG(V1_WARN, "[WARN] DCS revceived request broadcast message from wrong worker %i => %i", senderId, _treeSnapshot.parentIndex);
             return;
         }
@@ -444,8 +444,8 @@ public:
             return;
         }
 
-        if (senderId != _treeSnapshot.parentIndex || senderId != _treeSnapshot.index) {
-            LOG(V1_WARN, "[WARN] DCS revceived response broadcast message from wrong worker %i => %i", senderId, _treeSnapshot.parentIndex);
+        if (senderId != _treeSnapshot.parentIndex && senderId != _treeSnapshot.index) {
+            LOG(V1_WARN, "[WARN] DCS revceived response broadcast message from wrong worker %i => %i\n", senderId, _treeSnapshot.parentIndex);
             return;
         }
 
