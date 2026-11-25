@@ -25,7 +25,7 @@ private:
 
         bool finished {false};
 
-        BackgroundTask(Type type, std::vector<IntPair>&& intervals, VecVec<int>&& clauses) : 
+        BackgroundTask(Type type, std::vector<IntPair>& intervals, VecVec<int>& clauses) : 
             type(type), intervals(intervals), clauses(clauses) {}
     };
 
@@ -61,7 +61,7 @@ private:
             // make sure the background worker is not running
             {
                 auto lock = _mtx_bg_task.getLock();
-                _bg_tasks.emplace_back(type, std::move(intervals), std::move(clauses));
+                _bg_tasks.emplace_back(type, intervals, clauses);
             }
             _cond_var_bg_task.notify();
             _num_open_tasks++;
@@ -186,7 +186,7 @@ public:
 
         // add INSERT_AND_IMPORT task to worker
         std::vector<IntPair> interv = {IntPair(epoch, epoch+1)};
-        _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, interv, {std::move(clauses)});
+        _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, interv, {clauses});
 
         _last_epoch = epoch;
 
@@ -248,7 +248,7 @@ public:
 
             if (task.type == BackgroundTask::REQUEST) {
                 // prepared slots for sharing
-                JobTreeProgressSharer::Response response(std::move(task.intervals), std::move(task.clauses));
+                JobTreeProgressSharer::Response response(task.intervals, task.clauses);
                 
                 // add response to job tree sharer
                 _sharer->addOwnResponse(response);

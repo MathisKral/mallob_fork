@@ -218,7 +218,7 @@ public:
         // default constructor
         Response() = default;
 
-        Response(std::vector<IntPair>&& intervals, std::vector<std::vector<int>>&& clauses) {
+        Response(const std::vector<IntPair>& intervals, const std::vector<std::vector<int>>& clauses) {
             assert(intervals.size() == clauses.size());
 
             for (int i = 0; i < intervals.size(); ++i) {
