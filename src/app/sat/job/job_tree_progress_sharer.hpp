@@ -483,7 +483,7 @@ public:
                 LOG(V4_VVER, "DCS request intervals: %s\n", _current_request.formatIntervals().c_str());
 
                 msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST;
-                _treeSnapshot.send(_treeSnapshot.nodeRank, MSG_SEND_APPLICATION_MESSAGE, msg);
+                _treeSnapshot.sendToSelf(msg, MSG_SEND_APPLICATION_MESSAGE);
             } else {
                 LOG(V4_VVER, "DCS request aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
 
@@ -520,7 +520,7 @@ public:
                 // TODO: log response intervals
 
                 msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_BROADCAST;
-                _treeSnapshot.send(_treeSnapshot.nodeRank, MSG_SEND_APPLICATION_MESSAGE, msg);
+                _treeSnapshot.sendToSelf(msg, MSG_SEND_APPLICATION_MESSAGE);
             } else {
                 LOG(V4_VVER, "DCS response aggregation finished on worker %i, sending response to parent\n", _treeSnapshot.index);
 

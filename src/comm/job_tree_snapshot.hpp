@@ -18,6 +18,12 @@ struct JobTreeSnapshot {
     int parentIndex;
     int parentContextId;
 
+    void sendToSelf(JobMessage& msg, int mpiTag) const {
+        msg.contextIdOfDestination = contextId;
+        msg.treeIndexOfDestination = index;
+        send(nodeRank, mpiTag, msg);
+    }
+
     void sendToParent(JobMessage& msg, int mpiTag) const {
         msg.contextIdOfDestination = parentContextId;
         msg.treeIndexOfDestination = parentIndex;
