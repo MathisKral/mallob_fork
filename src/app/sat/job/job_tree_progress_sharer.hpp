@@ -333,8 +333,12 @@ public:
 
 	    LOG(V4_VVER, "DCS progress sharer %i, %i \n", _treeSnapshot.leftChildIndex, _treeSnapshot.rightChildIndex);
 
+        // reset default message
         _epoch = epoch;
-        _default_msg.epoch = _epoch;
+        _default_msg = JobMessage(
+            _job->getId(), _job->getActorContextId(),
+            _job->getRevision(), _epoch, MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE
+        );
 
         _received_child_elems = std::pair<bool, bool>(
             _treeSnapshot.leftChildIndex == -1,
