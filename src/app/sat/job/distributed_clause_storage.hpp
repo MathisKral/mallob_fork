@@ -215,6 +215,8 @@ public:
         // get requested intervals
         JobTreeProgressSharer::Request req(payload);
 
+        LOG(V4_VVER, "DCS received request for intervals %s\n", req.formatIntervals().c_str());
+
         // ask worker to prepare clauses
         _worker.addTask(BackgroundTask::REQUEST, req.getIntervals(), VecVec<int>());
     }
@@ -269,6 +271,8 @@ public:
             if (task.type == BackgroundTask::REQUEST) {
                 // prepared slots for sharing
                 JobTreeProgressSharer::Response response(task.intervals, task.clauses);
+
+                LOG(V4_VVER, "DCS finished response creation for intervals %s\n", response.formatIntervals().c_str());
                 
                 // add response to job tree sharer
                 _sharer->addOwnResponse(response);

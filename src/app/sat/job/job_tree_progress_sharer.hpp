@@ -561,7 +561,7 @@ public:
             // if root node, start broadcast
             if (_treeSnapshot.index == 0) {
                 LOG(V4_VVER, "DCS response aggregation finished on root node, starting broadcast\n");
-                LOG(V4_VVER, "DCS response intervals: [ %s ]", _current_response.formatIntervals().c_str());
+                LOG(V4_VVER, "DCS response intervals: [ %s ]\n", _current_response.formatIntervals().c_str());
 
                 msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_BROADCAST;
                 _treeSnapshot.sendToSelf(msg, MSG_SEND_APPLICATION_MESSAGE);
