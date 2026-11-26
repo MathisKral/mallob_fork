@@ -254,7 +254,7 @@ public:
 
                 current_min = current_max+1;
                 current_max++;
-                while (payload[current_max != PROGRESS_SHARER_SEPERATOR])
+                while (payload[current_max] != PROGRESS_SHARER_SEPERATOR)
                     current_max++;
 
                 // decode clauses
@@ -286,7 +286,7 @@ public:
             return out;
         }
 
-        void merge(Response other) {
+        void merge(Response& other) {
 
             // if response is empty, just add everything from the other response
             // the other response must not be empty!
