@@ -229,6 +229,7 @@ public:
                 // add this later when clauses are actually there
                 // slot.clauses = clauses[i]; 
                 slot.clauses = {};
+                slots.push_back(slot);
             }
         }
 
