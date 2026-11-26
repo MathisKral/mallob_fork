@@ -25,7 +25,7 @@ private:
 
         bool finished {false};
 
-        BackgroundTask(Type type, std::vector<IntPair>& intervals, VecVec<int>& clauses) : 
+        BackgroundTask(Type type, std::vector<IntPair>&& intervals, VecVec<int>&& clauses) : 
             type(type), intervals(intervals), clauses(clauses) {}
     };
 
@@ -61,7 +61,7 @@ private:
             // make sure the background worker is not running
             {
                 auto lock = _mtx_bg_task.getLock();
-                _bg_tasks.emplace_back(type, intervals, clauses);
+                _bg_tasks.emplace_back(type, std::move(intervals), std::move(clauses));
             }
             _cond_var_bg_task.notify();
             _num_open_tasks++;
@@ -155,7 +155,7 @@ std::vector<IntPair> _missing_epoch_intervals;
 public:
     DistributedClauseStorage(BaseSatJob* job, int max_same_breadth_slots) : 
          _max_same_breadth_slots(max_same_breadth_slots), _job(job), _worker(_max_same_breadth_slots) {
-            LOG(V4_VVER, "DCS Setup Distributed Clause Storage\n");
+            LOG(V4_VVER, "DCSintervals Setup Distributed Clause Storage\n");
             _sharer.reset(new JobTreeProgressSharer(_job));
         }
 
