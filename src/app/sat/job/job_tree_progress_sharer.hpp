@@ -287,8 +287,15 @@ public:
         }
 
         void merge(Response other) {
-            // every response must have the same intervals, even if there are no clauses
+
+            // if response is empty, just add everything from the other response
+            // the other response must not be empty!
+            if (slots.size() == 0) {
+                slots = std::move(other.slots);
+                return;
+            }
             
+            // otherwise, every response must have the same intervals, even if there are no clauses
             assert(slots.size() == other.slots.size());
 
             for (int i = 0; i < slots.size(); ++i) {
@@ -530,7 +537,7 @@ public:
                 msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_BROADCAST;
                 _treeSnapshot.sendToSelf(msg, MSG_SEND_APPLICATION_MESSAGE);
             } else {
-                LOG(V4_VVER, "DCS request aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
+                //LOG(V4_VVER, "DCS request aggregation finished on worker %i, sending request to parent\n", _treeSnapshot.index);
 
                 msg.tag = MSG_REQUEST_HISTORIC_CLAUSES_AGGREGATE;
                 _treeSnapshot.sendToParent(msg, MSG_SEND_APPLICATION_MESSAGE);
@@ -567,7 +574,7 @@ public:
                 msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_BROADCAST;
                 _treeSnapshot.sendToSelf(msg, MSG_SEND_APPLICATION_MESSAGE);
             } else {
-                LOG(V4_VVER, "DCS response aggregation finished on worker %i, sending response to parent\n", _treeSnapshot.index);
+                //LOG(V4_VVER, "DCS response aggregation finished on worker %i, sending response to parent\n", _treeSnapshot.index);
 
                 msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_AGGREGATE;
                 _treeSnapshot.sendToParent(msg, MSG_SEND_APPLICATION_MESSAGE);

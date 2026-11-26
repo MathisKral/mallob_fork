@@ -155,7 +155,7 @@ std::vector<IntPair> _missing_epoch_intervals;
 public:
     DistributedClauseStorage(BaseSatJob* job, int max_same_breadth_slots) : 
          _max_same_breadth_slots(max_same_breadth_slots), _job(job), _worker(_max_same_breadth_slots) {
-            LOG(V4_VVER, "DCSintervals Setup Distributed Clause Storage\n");
+            LOG(V4_VVER, "DCS Setup Distributed Clause Storage\n");
             _sharer.reset(new JobTreeProgressSharer(_job));
         }
 
@@ -169,8 +169,6 @@ public:
     // import clauses from clause sharing
     // gets called during every clause sharing iteration
     void importSharing(int epoch, std::vector<int>&& clauses) {
-        LOG(V5_DEBG, "DCS import clauses\n");
-
         updateMissingIntervals(epoch, epoch+1);
 
         // fast-forward slot creation for empty slots
@@ -195,7 +193,7 @@ public:
 
     // handle the request for a interval
     void handleIntervalRequestAggregation(int epoch, int senderId, JobTreeProgressSharer::Request&& request) {
-        LOG(V4_VVER, "DCS received request aggregation for epoch %i from worker %i\n", epoch, senderId);
+        //LOG(V4_VVER, "DCS received request aggregation for epoch %i from worker %i\n", epoch, senderId);
         
         // add request to progress sharer
         _sharer->addChildRequest(request, senderId);
@@ -203,7 +201,7 @@ public:
     }
 
     void handleIntervalRequestBroadcast(int epoch, int senderId, std::vector<int>& payload) {
-        LOG(V4_VVER, "DCS received request broadcast for epoch %i\n", epoch);
+        //LOG(V4_VVER, "DCS received request broadcast for epoch %i\n", epoch);
         
         // advance broadcasting
         _sharer->broadcastRequest(payload, senderId);
@@ -221,7 +219,7 @@ public:
     }
 
     void handleIntervalResponseAggregation(int epoch, int senderId, JobTreeProgressSharer::Response&& response) {
-        LOG(V4_VVER, "DCS received response aggregation epoch %i from worker %i\n", epoch, senderId);
+        //LOG(V4_VVER, "DCS received response aggregation epoch %i from worker %i\n", epoch, senderId);
         
         // add child request and advance
         _sharer->addChildResponse(response, senderId);
@@ -229,7 +227,7 @@ public:
     }
 
     void handleIntervalResponseBroadcast(int epoch, int senderId, std::vector<int>& payload) {
-        LOG(V4_VVER, "DCS received response broadcast\n");
+        //LOG(V4_VVER, "DCS received response broadcast\n");
         
         // advance broadcasting
         _sharer->broadcastResponse(payload, senderId);
