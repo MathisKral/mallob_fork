@@ -57,7 +57,7 @@ private:
             _bg_worker.run([this]() {runBackgroundWorker();});
         }
 
-        void addTask(BackgroundTask::Type type, std::vector<IntPair>& intervals, VecVec<int>&& clauses) {
+        void addTask(BackgroundTask::Type type, std::vector<IntPair>&& intervals, VecVec<int>&& clauses) {
             // make sure the background worker is not running
             {
                 auto lock = _mtx_bg_task.getLock();
@@ -185,8 +185,7 @@ public:
         LOG(V4_VVER, "DCS insert [%i,%i) buflen=...\n", epoch, epoch+1);
 
         // add INSERT_AND_IMPORT task to worker
-        std::vector<IntPair> interv = {IntPair(epoch, epoch+1)};
-        _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, interv, {clauses});
+        _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, {IntPair(epoch, epoch+1)}, {clauses});
 
         _last_epoch = epoch;
 
@@ -218,7 +217,7 @@ public:
         LOG(V4_VVER, "DCS received request for intervals %s\n", req.formatIntervals().c_str());
 
         // ask worker to prepare clauses
-        _worker.addTask(BackgroundTask::REQUEST, req.getIntervals(), VecVec<int>());
+        _worker.addTask(BackgroundTask::REQUEST, std::move(req.getIntervals()), VecVec<int>());
     }
 
     void handleIntervalResponseAggregation(int epoch, int senderId, JobTreeProgressSharer::Response&& response) {
@@ -246,7 +245,7 @@ public:
             intervals.push_back(slot.interval);
             clauses.push_back(slot.clauses);
         }
-        _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, intervals, std::move(clauses));
+        _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, std::move(intervals), std::move(clauses));
 
         // update missing intervals
         for (auto interval : intervals) {
