@@ -228,7 +228,7 @@ public:
     }
 
     void handleIntervalResponseBroadcast(int epoch, int senderId, std::vector<int>& payload) {
-        LOG(V4_VVER, "DCS received response broadcast for interval [...,...)\n");
+        LOG(V4_VVER, "DCS received response broadcast\n");
         
         // advance broadcasting
         _sharer->broadcastResponse(payload, senderId);
@@ -298,20 +298,20 @@ private:
             auto& [iBegin, iEnd] = *it;
             if (epochBegin <= iBegin && epochEnd >= iEnd) {
                 // full match: delete missing interval
-                LOG(V4_VVER, "HCS close full hole\n");
+                LOG(V4_VVER, "DCS close full hole with interval [%i,%i)\n", epochBegin, epochEnd);
                 it = _missing_epoch_intervals.erase(it);
                 --it;
             } else if (epochBegin <= iBegin && epochEnd > iBegin && epochEnd < iEnd) {
                 // left-end match: reduce missing interval to its right part
-                LOG(V4_VVER, "HCS close hole left\n");
+                LOG(V4_VVER, "DCS close hole left with interval [%i,%i)\n", epochBegin, epochEnd);
                 iBegin = epochEnd;
             } else if (epochBegin > iBegin && epochBegin < iEnd && epochEnd >= iEnd) {
                 // right-end match: reduce missing interval to its left part
-                LOG(V4_VVER, "HCS close hole right\n");
+                LOG(V4_VVER, "DCS close hole right with interval [%i,%i)\n", epochBegin, epochEnd);
                 iEnd = epochBegin;
             } else if (iBegin < epochBegin && epochEnd < iEnd) {
                 // match in the middle: separate interval into two smaller ones
-                LOG(V4_VVER, "HCS close hole mid\n");
+                LOG(V4_VVER, "DCS close hole mid with interval [%i, %i)\n", epochBegin, epochEnd);
                 IntPair secondInterval = {epochEnd, iEnd};
                 // insert first new interval
                 it = _missing_epoch_intervals.insert(it, IntPair(iBegin, epochBegin));
@@ -327,11 +327,11 @@ private:
             // add to missing epoch intervals
             if (!_missing_epoch_intervals.empty() && _missing_epoch_intervals.back().second == epochBegin-1) {
                 // add to existing interval
-                LOG(V4_VVER, "HCS extend hole\n");
+                LOG(V4_VVER, "DCS extend hole\n");
                 _missing_epoch_intervals.back().second++;
             } else {
                 // add new interval
-                LOG(V4_VVER, "HCS add hole\n");
+                LOG(V4_VVER, "DCS add hole\n");
                 _missing_epoch_intervals.emplace_back(_last_epoch+1, epochBegin);
             }
         }
