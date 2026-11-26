@@ -118,7 +118,7 @@ private:
                 // worker has received a broadcasted request for clauses
                 case BackgroundTask::REQUEST:
                     /*
-                    TODO
+                    TODO - ASSURE THAT THE RETURNED SLOTS ARE SORTED BASED ON INTERVALS!!!
                     */
                     break;
 
@@ -246,6 +246,10 @@ public:
         }
         _worker.addTask(BackgroundTask::INSERT_AND_IMPORT, intervals, std::move(clauses));
 
+        // update missing intervals
+        for (auto interval : intervals) {
+            updateMissingIntervals(interval.first, interval.second);
+        }
     }
 
 

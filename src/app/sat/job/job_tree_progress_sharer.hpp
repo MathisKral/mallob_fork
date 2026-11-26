@@ -5,6 +5,7 @@
 #include "comm/msgtags.h"
 #include "data/job_transfer.hpp"
 #include "util/logger.hpp"
+#include <algorithm>
 #include <cassert>
 #include <string>
 #include <utility>
@@ -132,8 +133,8 @@ public:
 
         std::string formatIntervals() {
 
-	    if (intervals.size() == 0)
-	        return std::string("[ ]");
+	        if (intervals.size() == 0)
+	            return std::string("[ ]");
 
             std::string out("[ ");
 
@@ -285,15 +286,58 @@ public:
         }
 
         void merge(Response other) {
-            for (auto slot : other.slots) {
-                // merge slots
-                // TODO: this sould actually merge slots!!!
-                slots.push_back(slot);
+            // every response must have the same intervals, even if there are no clauses
+            
+            assert(slots.size() == other.slots.size());
+
+            for (int i = 0; i < slots.size(); ++i) {
+                slots[i] = mergeSlots(std::move(slots[i]), std::move(other.slots[i]));
             }
         }
 
         std::vector<Slot>& getSlots() {
             return slots;
+        }
+
+        std::string formatIntervals() {
+
+            if (slots.size() == 0)
+                return std::string("[ ]");
+
+            
+            std::string out("[ ");
+
+            auto it = slots.begin();
+            while (it < slots.end()-1) {
+                out += "[";
+                out += std::to_string(it->interval.first);
+                out += ", ";
+                out += std::to_string(it->interval.second);
+                out += "), ";
+                it++;
+            }
+            out += "[";
+      	    out += std::to_string(it->interval.first);
+            out += ", ";
+	        out += std::to_string(it->interval.second);
+      	    out += ")";
+            out += " ]";
+
+            return out;
+        }
+
+    private:
+        Slot mergeSlots(Slot&& first, Slot&& second) {
+            assert(first.interval.first == second.interval.first);
+            assert(first.interval.second == second.interval.second);
+
+            Slot res;
+            res.interval = first.interval;
+
+            res.clauses.insert(res.clauses.end(), first.clauses.begin(), first.clauses.end());
+            res.clauses.insert(res.clauses.end(), second.clauses.begin(), second.clauses.end());
+
+            return res;
         }
     };
 
@@ -517,7 +561,7 @@ public:
             // if root node, start broadcast
             if (_treeSnapshot.index == 0) {
                 LOG(V4_VVER, "DCS response aggregation finished on root node, starting broadcast\n");
-                // TODO: log response intervals
+                LOG(V4_VVER, "DCS response intervals: [ %s ]", _current_response.formatIntervals().c_str());
 
                 msg.tag = MSG_FORWARD_HISTORIC_CLAUSES_BROADCAST;
                 _treeSnapshot.sendToSelf(msg, MSG_SEND_APPLICATION_MESSAGE);
